@@ -6,6 +6,6 @@ namespace RentACarDotNetCore.Application.Requests
     {
         public string Id { get; set; }
         public string Name { get; set; }
-        public BrandDTO BrandDTO { get; set; }
+        public BrandDTO Brand { get; set; }
     }
 }

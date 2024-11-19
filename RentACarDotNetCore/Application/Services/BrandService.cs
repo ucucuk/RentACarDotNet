@@ -39,10 +39,10 @@ namespace RentACarDotNetCore.Application.Services
 
         public Brand Create(CreateBrandRequest createBrandRequest)
         {
-            Brand existsBrand = _brands.Find(brand => brand.Name.Equals(createBrandRequest.Name)).FirstOrDefault();
+            Brand existsBrand = _brands.Find(brand => brand.Name.ToLower().Equals(createBrandRequest.Name.ToLower())).FirstOrDefault();
             if (existsBrand != null)
             {
-                throw new AlreadyExistsException($"{createBrandRequest.Name} brand is already exists.");
+                throw new AlreadyExistsException($"{createBrandRequest.Name} brand already exists.");
             }
             Brand brand = _mapper.Map<Brand>(createBrandRequest);
             _brands.InsertOne(brand);
@@ -51,6 +51,11 @@ namespace RentACarDotNetCore.Application.Services
 
         public void Update(UpdateBrandRequest updateBrandRequest)
         {
+            Brand existsBrand = _brands.Find(brand => brand.Name.ToLower().Equals(updateBrandRequest.Name.ToLower())).FirstOrDefault();
+            if (existsBrand != null)
+            {
+                throw new AlreadyExistsException($"{updateBrandRequest.Name} brand already exists.");
+            }
             _brands.ReplaceOne(brand => brand.Id == updateBrandRequest.Id, _mapper.Map<Brand>(updateBrandRequest));
         }
 
