@@ -25,7 +25,11 @@ namespace RentACarDotNetCore.Utilities.Exceptions
                 {
                     case NotFoundException e:
                         // custom application error
-                        response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        response.StatusCode = (int)HttpStatusCode.NotFound;
+                        break;
+                    case AlreadyExistsException e:
+                        // custom application error
+                        response.StatusCode = 403;
                         break;
                     case KeyNotFoundException e:
                         // not found error

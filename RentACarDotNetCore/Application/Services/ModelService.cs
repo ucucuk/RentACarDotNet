@@ -23,15 +23,27 @@ namespace RentACarDotNetCore.Application.Services
             _brands = database.GetCollection<Brand>(databaseSettings.BrandsCollectionName);
         }
 
-        public Model Get(string id)
+        public GetModelResponse Get(string id)
         {
-
-            return _models.Find(model => model.Id == id).FirstOrDefault();
+            Model model = _models.Find(model => model.Id == id).FirstOrDefault();
+            if (model != null && model.Brand != null)
+            {
+                model.Brand = _brands.Find(brand => brand.Id == model.Brand.Id).FirstOrDefault();
+            }
+            return _mapper.Map<GetModelResponse>(model);
         }
 
-        public List<GetAllModelsResponse> Get()
+        public List<GetModelResponse> Get()
         {
-            return _mapper.Map<List<GetAllModelsResponse>>(_models.Find(model => true).ToList());
+            List<Model> models = _models.Find(model => true).ToList();
+            foreach (Model model in models)
+            {
+                if (model != null && model.Brand != null)
+                {
+                    model.Brand = _brands.Find(brand => brand.Id == model.Brand.Id).FirstOrDefault();
+                }
+            }
+            return _mapper.Map<List<GetModelResponse>>(models);
         }
 
         public Model Create(CreateModelRequest createModelRequest)

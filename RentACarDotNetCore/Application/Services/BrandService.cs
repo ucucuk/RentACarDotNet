@@ -5,6 +5,7 @@ using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests;
 using RentACarDotNetCore.Application.Responses;
 using RentACarDotNetCore.Domain.Repositories;
+using RentACarDotNetCore.Utilities.Exceptions;
 using System.Collections.Generic;
 
 namespace RentACarDotNetCore.Application.Services
@@ -23,17 +24,27 @@ namespace RentACarDotNetCore.Application.Services
 
         public Brand Get(string id)
         {
+            Brand existsBrand = _brands.Find(brand => brand.Id == id).FirstOrDefault();
+            if (existsBrand == null)
+            {
+                throw new NotFoundException($"No brand found with this {id}");
+            }
             return _brands.Find(brand => brand.Id == id).FirstOrDefault();
         }
 
-        public List<GetAllBrandsResponse> Get()
+        public List<GetBrandResponse> Get()
         {
-            return _mapper.Map<List<GetAllBrandsResponse>>(_brands.Find(brand => true).ToList());
+            return _mapper.Map<List<GetBrandResponse>>(_brands.Find(brand => true).ToList());
         }
 
-        public Brand Create(BrandDTO brandDTO)
+        public Brand Create(CreateBrandRequest createBrandRequest)
         {
-            Brand brand = _mapper.Map<Brand>(brandDTO);
+            Brand existsBrand = _brands.Find(brand => brand.Name.Equals(createBrandRequest.Name)).FirstOrDefault();
+            if (existsBrand != null)
+            {
+                throw new AlreadyExistsException($"{createBrandRequest.Name} brand is already exists.");
+            }
+            Brand brand = _mapper.Map<Brand>(createBrandRequest);
             _brands.InsertOne(brand);
             return brand;
         }

@@ -22,23 +22,23 @@ namespace RentACarDotNetCore.Controllers
 
         // GET: api/<ModelsController>
         [HttpGet]
-        public ActionResult<List<GetAllModelsResponse>> Get()
+        public ActionResult<List<GetModelResponse>> Get()
         {
             return _modelService.Get();
         }
 
         // GET api/<ModelsController>/5
         [HttpGet("{id}")]
-        public ActionResult<Model> Get(string id)
+        public ActionResult<GetModelResponse> Get(string id)
         {
-            var model = _modelService.Get(id);
+            GetModelResponse getModelResponse = _modelService.Get(id);
 
-            if (model == null)
+            if (getModelResponse == null)
             {
                 return NotFound($"Model with Id ={id} not found.");
             }
 
-            return model;
+            return getModelResponse;
         }
 
         // POST api/<ModelsController>

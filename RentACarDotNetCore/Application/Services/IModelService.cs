@@ -6,8 +6,8 @@ namespace RentACarDotNetCore.Application.Services
 {
     public interface IModelService
     {
-        List<GetAllModelsResponse> Get();
-        Model Get(string id);
+        List<GetModelResponse> Get();
+        GetModelResponse Get(string id);
         Model Create(CreateModelRequest createModelRequest);
         void Update(UpdateModelRequest updateModelRequest);
         void Delete(string id);

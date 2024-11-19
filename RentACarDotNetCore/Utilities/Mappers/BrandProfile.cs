@@ -12,7 +12,7 @@ namespace RentACarDotNetCore.Utilities.Mappers
         {
             CreateMap<Brand, BrandDTO>().ReverseMap();
             CreateMap<Brand, UpdateBrandRequest>().ReverseMap();
-            CreateMap<Brand, GetAllBrandsResponse>().ReverseMap();
+            CreateMap<Brand, GetBrandResponse>().ReverseMap();
             //.ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FirstName + " " + src.LastName));
         }
 
