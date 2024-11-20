@@ -55,11 +55,6 @@ namespace RentACarDotNetCore.Controllers
         [HttpPut]
         public ActionResult Put([FromBody] UpdateModelRequest updateModelRequest)
         {
-            var existingModel = _modelService.Get(updateModelRequest.Id);
-            if (existingModel == null)
-            {
-                NotFound($"Model with id = {updateModelRequest.Id} not found.");
-            }
             _modelService.Update(updateModelRequest);
             return NoContent();
         }

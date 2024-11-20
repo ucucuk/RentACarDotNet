@@ -61,26 +61,37 @@ namespace RentACarDotNetCore.Application.Services
         }
 
         public void Update(UpdateModelRequest updateModelRequest)
-        {
+        {   
             Brand brand = _brands.Find(brand => brand.Name.ToLower().Equals(updateModelRequest.Brand.Name.ToLower())).FirstOrDefault();
             if (brand == null)
             {
                 throw new NotFoundException($"{updateModelRequest.Brand.Name} brand is not found.");
             }
-            // var filter = Builders<Model>.Filter.And(
-            //Builders<Model>.Filter.Eq(model => model.Name, updateModelRequest.Name),
-            //Builders<Model>.Filter.Ne(model => model.Id, updateModelRequest.Id));
-            Model model2 = _models.Find(model =>
-            (model.Name.ToLower().Equals(updateModelRequest.Name.ToLower())
-            && model.Id != updateModelRequest.Id)
-            ).FirstOrDefault();
-            if (model2 != null)
-            {
+            var filter = Builders<Model>.Filter.And(
+           Builders<Model>.Filter.Eq(model => model.Name, updateModelRequest.Name),
+           Builders<Model>.Filter.Ne(model => model.Id, updateModelRequest.Id));
+            var isDuplicated = _models.Find(filter).FirstOrDefault();
+            if (isDuplicated != null)
                 throw new AlreadyExistsException($"{updateModelRequest.Name} model already exists.");
-            }
-            Model model = _mapper.Map<Model>(updateModelRequest);
+
+            var updateFilter = Builders<Model>.Filter.Eq(m => m.Id , updateModelRequest.Id);
+            var model = _models.Find(updateFilter).FirstOrDefault();
+            if (model == null)
+                throw new NotFoundException($"Model with id = {updateModelRequest.Id} not found.");
+
+            model.Name= updateModelRequest.Name;
             model.Brand = brand;
-            _models.ReplaceOne(model => model.Id == updateModelRequest.Id, model);
+            _models.ReplaceOne(updateFilter, model);
+            //Model model2 = _models.Find(model =>
+            //(model.Name.ToLower().Equals(updateModelRequest.Name.ToLower()) && model.Id != updateModelRequest.Id)
+            //).FirstOrDefault();
+            //if (model2 != null)
+            //{
+            //    throw new AlreadyExistsException($"{updateModelRequest.Name} model already exists.");
+            //}
+            //Model model = _mapper.Map<Model>(updateModelRequest);
+            //model.Brand = brand;
+            //_models.ReplaceOne(model => model.Id == updateModelRequest.Id, model);
         }
 
         public void Delete(string id)
