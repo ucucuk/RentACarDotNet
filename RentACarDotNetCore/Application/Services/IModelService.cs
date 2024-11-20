@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests;
 using RentACarDotNetCore.Application.Responses;
 
@@ -8,7 +9,7 @@ namespace RentACarDotNetCore.Application.Services
     {
         List<GetModelResponse> Get();
         GetModelResponse Get(string id);
-        Model Create(CreateModelRequest createModelRequest);
+        ModelDTO Create(CreateModelRequest createModelRequest);
         void Update(UpdateModelRequest updateModelRequest);
         void Delete(string id);
     }

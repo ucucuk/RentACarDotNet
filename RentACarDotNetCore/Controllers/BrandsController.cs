@@ -27,6 +27,13 @@ namespace RentACarDotNetCore.Controllers
             return _brandService.Get();
         }
 
+        // GET: api/<BrandsController>
+        [HttpGet("getbrandwithmodels")]
+        public ActionResult<List<GetBrandWithModelsResponse>> GetBrandWithModels()
+        {
+            return _brandService.GetBrandWithModels();
+        }
+
         // GET api/<BrandsController>/5
         [HttpGet("{id}")]
         public ActionResult<Brand> Get(string id)
@@ -41,10 +48,10 @@ namespace RentACarDotNetCore.Controllers
 
         // POST api/<BrandsController>
         [HttpPost]
-        public ActionResult<Brand> Post([FromBody] CreateBrandRequest createBrandRequest)
+        public ActionResult<BrandDTO> Post([FromBody] CreateBrandRequest createBrandRequest)
         {
-            Brand brand = _brandService.Create(createBrandRequest);
-            return CreatedAtAction(nameof(Get), new { id = brand.Id }, brand);
+            BrandDTO brandDTO = _brandService.Create(createBrandRequest);
+            return CreatedAtAction(nameof(Get), new { id = brandDTO.Id }, brandDTO);
         }
 
         // PUT api/<BrandsController>/5

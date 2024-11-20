@@ -6,13 +6,13 @@ using RentACarDotNetCore.Application.Requests;
 using RentACarDotNetCore.Application.Responses;
 using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
-using System.Collections.Generic;
 
 namespace RentACarDotNetCore.Application.Services
 {
     public class BrandService : IBrandService
     {
         private readonly IMongoCollection<Brand> _brands;
+        private readonly IMongoCollection<Model> _models;
         private readonly IMapper _mapper;
 
         public BrandService(IRentACarDatabaseSettings databaseSettings, IMongoClient mongoClient, IMapper mapper)
@@ -20,6 +20,7 @@ namespace RentACarDotNetCore.Application.Services
             _mapper = mapper;
             var database = mongoClient.GetDatabase(databaseSettings.DatabaseName);
             _brands = database.GetCollection<Brand>(databaseSettings.BrandsCollectionName);
+            _models = database.GetCollection<Model>(databaseSettings.ModelsCollectionName);
         }
 
         public Brand Get(string id)
@@ -37,7 +38,17 @@ namespace RentACarDotNetCore.Application.Services
             return _mapper.Map<List<GetBrandResponse>>(_brands.Find(brand => true).ToList());
         }
 
-        public Brand Create(CreateBrandRequest createBrandRequest)
+        public List<GetBrandWithModelsResponse> GetBrandWithModels()
+        {
+            List<Brand> brands = _brands.Find(brand => true).ToList();
+            foreach (Brand brand in brands)
+            {
+                brand.Models = _models.Find(model => model.Brand.Id == brand.Id).ToList();
+            }
+            return _mapper.Map<List<GetBrandWithModelsResponse>>(brands);
+        }
+
+        public BrandDTO Create(CreateBrandRequest createBrandRequest)
         {
             Brand existsBrand = _brands.Find(brand => brand.Name.ToLower().Equals(createBrandRequest.Name.ToLower())).FirstOrDefault();
             if (existsBrand != null)
@@ -46,7 +57,7 @@ namespace RentACarDotNetCore.Application.Services
             }
             Brand brand = _mapper.Map<Brand>(createBrandRequest);
             _brands.InsertOne(brand);
-            return brand;
+            return _mapper.Map<BrandDTO>(brand);
         }
 
         public void Update(UpdateBrandRequest updateBrandRequest)
@@ -63,9 +74,6 @@ namespace RentACarDotNetCore.Application.Services
         {
             _brands.DeleteOne(brand => brand.Id == id);
         }
-
-
-
 
 
     }

@@ -14,6 +14,7 @@ namespace RentACarDotNetCore.Utilities.Mappers
             CreateMap<Model, ModelDTO>().ReverseMap(); // soldakini sağa çeviriyor, ama kullanırken de tam tersi
             CreateMap<Model, UpdateModelRequest>().ReverseMap();
             CreateMap<Model, CreateModelRequest>().ReverseMap();
+            CreateMap<Model, ModelIdNameDTO>().ReverseMap();
             CreateMap<Model, GetModelResponse>()
               .ForMember(get => get.Brand, opt => opt.MapFrom(model => model.Brand)).ReverseMap(); 
             //formemberda da hedef solda kaynak sağda

@@ -1,5 +1,6 @@
 ﻿using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests;
 using RentACarDotNetCore.Application.Responses;
 using RentACarDotNetCore.Application.Services;
@@ -43,10 +44,10 @@ namespace RentACarDotNetCore.Controllers
 
         // POST api/<ModelsController>
         [HttpPost]
-        public ActionResult<Model> Post([FromBody] CreateModelRequest createModelRequest)
+        public ActionResult<ModelDTO> Post([FromBody] CreateModelRequest createModelRequest)
         {
-            Model model = _modelService.Create(createModelRequest);
-            return CreatedAtAction(nameof(Get), new { id = model.Id }, model);
+            ModelDTO modelDTO = _modelService.Create(createModelRequest);
+            return CreatedAtAction(nameof(Get), new { id = modelDTO.Id }, modelDTO);
 
         }
 

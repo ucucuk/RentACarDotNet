@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Domain.Entities;
 using MongoDB.Driver;
+using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests;
 using RentACarDotNetCore.Application.Responses;
 using RentACarDotNetCore.Domain.Repositories;
@@ -46,7 +47,7 @@ namespace RentACarDotNetCore.Application.Services
             return _mapper.Map<List<GetModelResponse>>(models);
         }
 
-        public Model Create(CreateModelRequest createModelRequest)
+        public ModelDTO Create(CreateModelRequest createModelRequest)
         {
             Brand brand = _brands.Find(brand => brand.Name.Equals(createModelRequest.BrandName)).FirstOrDefault();
             if (brand == null)
@@ -56,7 +57,7 @@ namespace RentACarDotNetCore.Application.Services
             Model model = _mapper.Map<Model>(createModelRequest);
             model.Brand = brand;
             _models.InsertOne(model);
-            return model;
+            return _mapper.Map<ModelDTO>(model);
         }
 
         public void Update(UpdateModelRequest updateModelRequest)
@@ -66,11 +67,11 @@ namespace RentACarDotNetCore.Application.Services
             {
                 throw new NotFoundException($"{updateModelRequest.Brand.Name} brand is not found.");
             }
-           // var filter = Builders<Model>.Filter.And(
-           //Builders<Model>.Filter.Eq(model => model.Name, updateModelRequest.Name),
-           //Builders<Model>.Filter.Ne(model => model.Id, updateModelRequest.Id));
-            Model model2 = _models.Find(model => 
-            (model.Name.ToLower().Equals(updateModelRequest.Name.ToLower()) 
+            // var filter = Builders<Model>.Filter.And(
+            //Builders<Model>.Filter.Eq(model => model.Name, updateModelRequest.Name),
+            //Builders<Model>.Filter.Ne(model => model.Id, updateModelRequest.Id));
+            Model model2 = _models.Find(model =>
+            (model.Name.ToLower().Equals(updateModelRequest.Name.ToLower())
             && model.Id != updateModelRequest.Id)
             ).FirstOrDefault();
             if (model2 != null)
