@@ -36,9 +36,9 @@ namespace RentACarDotNetCore.Controllers
 
         // GET api/<BrandsController>/5
         [HttpGet("{id}")]
-        public ActionResult<Brand> Get(string id)
+        public ActionResult<GetBrandResponse> Get(string id)
         {
-            var brand = _brandService.Get(id);
+            GetBrandResponse brand = _brandService.Get(id);
             if (brand == null)
             {
                 return NotFound($"Brand with Id = {id} not found.");
@@ -55,7 +55,7 @@ namespace RentACarDotNetCore.Controllers
         }
 
         // PUT api/<BrandsController>/5
-        [HttpPut()]
+        [HttpPut]
         public ActionResult Put([FromBody] UpdateBrandRequest updateBrandRequest)
         {
             var existingBrand = _brandService.Get(updateBrandRequest.Id);

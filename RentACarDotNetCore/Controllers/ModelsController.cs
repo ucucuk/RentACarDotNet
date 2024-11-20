@@ -52,7 +52,7 @@ namespace RentACarDotNetCore.Controllers
         }
 
         // PUT api/<ModelsController>/5
-        [HttpPut()]
+        [HttpPut]
         public ActionResult Put([FromBody] UpdateModelRequest updateModelRequest)
         {
             var existingModel = _modelService.Get(updateModelRequest.Id);

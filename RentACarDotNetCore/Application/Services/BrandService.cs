@@ -6,6 +6,7 @@ using RentACarDotNetCore.Application.Requests;
 using RentACarDotNetCore.Application.Responses;
 using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
+using RentACarDotNetCore.Utilities.StringMethods;
 
 namespace RentACarDotNetCore.Application.Services
 {
@@ -14,23 +15,26 @@ namespace RentACarDotNetCore.Application.Services
         private readonly IMongoCollection<Brand> _brands;
         private readonly IMongoCollection<Model> _models;
         private readonly IMapper _mapper;
+        private readonly IStringConverter _stringConverter;
 
-        public BrandService(IRentACarDatabaseSettings databaseSettings, IMongoClient mongoClient, IMapper mapper)
+
+        public BrandService(IRentACarDatabaseSettings databaseSettings, IMongoClient mongoClient, IMapper mapper, IStringConverter stringConverter)
         {
             _mapper = mapper;
             var database = mongoClient.GetDatabase(databaseSettings.DatabaseName);
             _brands = database.GetCollection<Brand>(databaseSettings.BrandsCollectionName);
             _models = database.GetCollection<Model>(databaseSettings.ModelsCollectionName);
+            _stringConverter = stringConverter;
         }
 
-        public Brand Get(string id)
+        public GetBrandResponse Get(string id)
         {
             Brand existsBrand = _brands.Find(brand => brand.Id == id).FirstOrDefault();
             if (existsBrand == null)
             {
                 throw new NotFoundException($"No brand found with this {id}");
             }
-            return _brands.Find(brand => brand.Id == id).FirstOrDefault();
+            return _mapper.Map<GetBrandResponse>(_brands.Find(brand => brand.Id == id).FirstOrDefault());
         }
 
         public List<GetBrandResponse> Get()
@@ -55,6 +59,7 @@ namespace RentACarDotNetCore.Application.Services
             {
                 throw new AlreadyExistsException($"{createBrandRequest.Name} brand already exists.");
             }
+            createBrandRequest.Name = _stringConverter.ConvertTRCharToENChar(createBrandRequest.Name.ToUpper());
             Brand brand = _mapper.Map<Brand>(createBrandRequest);
             _brands.InsertOne(brand);
             return _mapper.Map<BrandDTO>(brand);

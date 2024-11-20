@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using RentACarDotNetCore.Application.Services;
 using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
+using RentACarDotNetCore.Utilities.StringMethods;
 using System.Reflection;
 internal class Startup
 {
@@ -37,9 +38,12 @@ internal class Startup
 
         builder.Services.AddScoped<IModelService, ModelService>();
         // IModelService çaðrýldýðýnda ModelService classýný kullanacaðýný söylüyoruz.
+
+        builder.Services.AddScoped<IStringConverter, StringConverter>();
+        // IModelService çaðrýldýðýnda ModelService classýný kullanacaðýný söylüyoruz.
         //////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////
-        
+
 
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

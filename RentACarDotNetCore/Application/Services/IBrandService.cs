@@ -9,7 +9,7 @@ namespace RentACarDotNetCore.Application.Services
     {
         List<GetBrandResponse> Get();
         List<GetBrandWithModelsResponse> GetBrandWithModels();
-        Brand Get(string id);
+        GetBrandResponse Get(string id);
         BrandDTO Create(CreateBrandRequest createBrandRequest);
         void Update(UpdateBrandRequest updateBrandRequest);
         void Delete(string id);
