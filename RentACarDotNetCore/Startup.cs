@@ -3,7 +3,7 @@ using MongoDB.Driver;
 using RentACarDotNetCore.Application.Services;
 using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
-using RentACarDotNetCore.Utilities.StringMethods;
+using RentACarDotNetCore.Utilities.Helpers;
 using System.Reflection;
 internal class Startup
 {
@@ -15,7 +15,7 @@ internal class Startup
         /////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////
         builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
-      
+       
 
         builder.Services.Configure<RentACarDatabaseSettings>(
                         builder.Configuration.GetSection(nameof(RentACarDatabaseSettings)));
@@ -56,7 +56,7 @@ internal class Startup
         app.UseMiddleware<ErrorHandlerMiddleware>();
         //////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////
-        
+
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {

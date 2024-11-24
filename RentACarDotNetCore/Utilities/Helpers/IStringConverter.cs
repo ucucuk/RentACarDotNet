@@ -1,4 +1,4 @@
-﻿namespace RentACarDotNetCore.Utilities.StringMethods
+﻿namespace RentACarDotNetCore.Utilities.Helpers
 {
     public interface IStringConverter
     {

@@ -6,7 +6,7 @@ using RentACarDotNetCore.Application.Requests;
 using RentACarDotNetCore.Application.Responses;
 using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
-using RentACarDotNetCore.Utilities.StringMethods;
+using RentACarDotNetCore.Utilities.Helpers;
 
 namespace RentACarDotNetCore.Application.Services
 {
