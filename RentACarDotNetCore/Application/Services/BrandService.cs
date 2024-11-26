@@ -2,8 +2,8 @@
 using Domain.Entities;
 using MongoDB.Driver;
 using RentACarDotNetCore.Application.DTOs;
-using RentACarDotNetCore.Application.Requests;
-using RentACarDotNetCore.Application.Responses;
+using RentACarDotNetCore.Application.Requests.Brand;
+using RentACarDotNetCore.Application.Responses.Brand;
 using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
 using RentACarDotNetCore.Utilities.Helpers;

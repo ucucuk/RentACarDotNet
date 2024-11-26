@@ -1,4 +1,4 @@
-﻿namespace RentACarDotNetCore.Application.Responses
+﻿namespace RentACarDotNetCore.Application.Responses.Brand
 {
     public class GetBrandResponse
     {

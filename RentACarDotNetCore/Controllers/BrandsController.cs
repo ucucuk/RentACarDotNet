@@ -1,8 +1,8 @@
 ﻿using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using RentACarDotNetCore.Application.DTOs;
-using RentACarDotNetCore.Application.Requests;
-using RentACarDotNetCore.Application.Responses;
+using RentACarDotNetCore.Application.Requests.Brand;
+using RentACarDotNetCore.Application.Responses.Brand;
 using RentACarDotNetCore.Application.Services;
 
 
@@ -51,7 +51,7 @@ namespace RentACarDotNetCore.Controllers
         public ActionResult<BrandDTO> Post([FromBody] CreateBrandRequest createBrandRequest)
         {
             BrandDTO brandDTO = _brandService.Create(createBrandRequest);
-            return CreatedAtAction(nameof(Get), new { id = brandDTO.Id }, brandDTO);
+            return CreatedAtAction(nameof(Post), new { id = brandDTO.Id }, brandDTO);
         }
 
         // PUT api/<BrandsController>/5

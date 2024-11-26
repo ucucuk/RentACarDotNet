@@ -1,7 +1,6 @@
-﻿
-using RentACarDotNetCore.Application.DTOs;
+﻿using RentACarDotNetCore.Application.DTOs;
 
-namespace RentACarDotNetCore.Application.Responses
+namespace RentACarDotNetCore.Application.Responses.Brand
 {
     public class GetBrandWithModelsResponse
     {

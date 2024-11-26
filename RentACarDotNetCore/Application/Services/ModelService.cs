@@ -2,8 +2,8 @@
 using Domain.Entities;
 using MongoDB.Driver;
 using RentACarDotNetCore.Application.DTOs;
-using RentACarDotNetCore.Application.Requests;
-using RentACarDotNetCore.Application.Responses;
+using RentACarDotNetCore.Application.Requests.Model;
+using RentACarDotNetCore.Application.Responses.Model;
 using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
 
@@ -49,7 +49,7 @@ namespace RentACarDotNetCore.Application.Services
 
         public ModelDTO Create(CreateModelRequest createModelRequest)
         {
-            Brand brand = _brands.Find(brand => brand.Name.Equals(createModelRequest.BrandName)).FirstOrDefault();
+            Brand brand = _brands.Find(brand => brand.Name.ToLower().Equals(createModelRequest.BrandName.ToLower())).FirstOrDefault();
             if (brand == null)
             {
                 throw new NotFoundException($"{createModelRequest.BrandName} brand is not found.");

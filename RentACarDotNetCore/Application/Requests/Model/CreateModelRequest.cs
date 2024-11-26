@@ -1,4 +1,4 @@
-﻿namespace RentACarDotNetCore.Application.Requests
+﻿namespace RentACarDotNetCore.Application.Requests.Model
 {
     public class CreateModelRequest
     {

@@ -39,6 +39,10 @@ internal class Startup
         builder.Services.AddScoped<IModelService, ModelService>();
         // IModelService çaðrýldýðýnda ModelService classýný kullanacaðýný söylüyoruz.
 
+        builder.Services.AddScoped<ICarService, CarService>();
+        // IModelService çaðrýldýðýnda ModelService classýný kullanacaðýný söylüyoruz.
+
+
         builder.Services.AddScoped<IStringConverter, StringConverter>();
         // IModelService çaðrýldýðýnda ModelService classýný kullanacaðýný söylüyoruz.
         //////////////////////////////////////////////////////////////////////

@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using RentACarDotNetCore.Domain.Entities;
 
 namespace Domain.Entities
 {
@@ -15,6 +16,9 @@ namespace Domain.Entities
 
         [BsonElement("brand")]
         public Brand Brand { get; set; }
+
+        [BsonElement("cars")]
+        public List<Car> Cars { get; set; }
     }
 
 
