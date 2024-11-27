@@ -4,7 +4,6 @@ using MongoDB.Driver;
 using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests;
 using RentACarDotNetCore.Application.Responses;
-using RentACarDotNetCore.Domain.Entities;
 using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
 using RentACarDotNetCore.Utilities.Helpers;
@@ -31,7 +30,8 @@ namespace RentACarDotNetCore.Application.Services
         }
         public List<GetCarResponse> Get()
         {
-            return _mapper.Map<List<GetCarResponse>>(_cars.Find(car => true).ToList());
+            List<Car> cars = _cars.Find(car => true).ToList();
+            return _mapper.Map<List<GetCarResponse>>(cars);
         }
 
 

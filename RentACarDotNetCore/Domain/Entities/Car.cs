@@ -1,9 +1,11 @@
-﻿using Domain.Entities;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-
-namespace RentACarDotNetCore.Domain.Entities
+﻿
+namespace Domain.Entities
 {
+
+    using MongoDB.Bson;
+    using MongoDB.Bson.Serialization.Attributes;
+
+
     [BsonIgnoreExtraElements]
     public class Car
     {
@@ -17,6 +19,7 @@ namespace RentACarDotNetCore.Domain.Entities
         [BsonElement("modelYear")]
         public int ModelYear { get; set; }
 
+        [BsonElement("model")]
         public Model Model { get; set; }
-}
+    }
 }

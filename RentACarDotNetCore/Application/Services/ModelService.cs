@@ -37,13 +37,6 @@ namespace RentACarDotNetCore.Application.Services
         public List<GetModelResponse> Get()
         {
             List<Model> models = _models.Find(model => true).ToList();
-            foreach (Model model in models)
-            {
-                if (model != null && model.Brand != null)
-                {
-                    model.Brand = _brands.Find(brand => brand.Id == model.Brand.Id).FirstOrDefault();
-                }
-            }
             return _mapper.Map<List<GetModelResponse>>(models);
         }
 
