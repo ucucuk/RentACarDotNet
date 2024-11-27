@@ -7,6 +7,7 @@ using RentACarDotNetCore.Application.Responses;
 using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
 using RentACarDotNetCore.Utilities.Helpers;
+using System.Reflection;
 
 namespace RentACarDotNetCore.Application.Services
 {
@@ -31,6 +32,14 @@ namespace RentACarDotNetCore.Application.Services
         public List<GetCarResponse> Get()
         {
             List<Car> cars = _cars.Find(car => true).ToList();
+            foreach (Car car in cars)
+            {
+                if (car != null)
+                {
+                    car.Model = _models.Find(model => model.Id == car.Model.Id).FirstOrDefault();
+                    car.Model.Brand = _brands.Find(brand => brand.Id == car.Model.Brand.Id).FirstOrDefault();
+                }
+            }
             return _mapper.Map<List<GetCarResponse>>(cars);
         }
 

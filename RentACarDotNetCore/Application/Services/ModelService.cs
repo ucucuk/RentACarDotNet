@@ -6,6 +6,7 @@ using RentACarDotNetCore.Application.Requests.Model;
 using RentACarDotNetCore.Application.Responses.Model;
 using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
+using RentACarDotNetCore.Utilities.Helpers;
 
 namespace RentACarDotNetCore.Application.Services
 {
@@ -15,13 +16,15 @@ namespace RentACarDotNetCore.Application.Services
         private readonly IMongoCollection<Model> _models;
         private readonly IMongoCollection<Brand> _brands;
         private readonly IMapper _mapper;
+        private readonly IStringConverter _stringConverter;
 
-        public ModelService(IRentACarDatabaseSettings databaseSettings, IMongoClient mongoClient, IMapper mapper)
+        public ModelService(IRentACarDatabaseSettings databaseSettings, IMongoClient mongoClient, IMapper mapper, IStringConverter stringConverter)
         {
             _mapper = mapper;
             var database = mongoClient.GetDatabase(databaseSettings.DatabaseName);
             _models = database.GetCollection<Model>(databaseSettings.ModelsCollectionName);
             _brands = database.GetCollection<Brand>(databaseSettings.BrandsCollectionName);
+            _stringConverter = stringConverter;
         }
 
         public GetModelResponse Get(string id)
@@ -37,6 +40,20 @@ namespace RentACarDotNetCore.Application.Services
         public List<GetModelResponse> Get()
         {
             List<Model> models = _models.Find(model => true).ToList();
+            foreach (Model model in models)
+            {
+                if (model != null && model.Brand != null)
+                {
+                    model.Brand = _brands.Find(brand => brand.Id == model.Brand.Id).FirstOrDefault();
+                }
+            }
+            //foreach (var model2 in models)
+            //{
+            //    model2.Name = _stringConverter.ConvertTRCharToENChar(model2.Name.ToUpper());
+            //    _models.ReplaceOne(model => model.Id == model2.Id, model2);
+
+            //}
+
             return _mapper.Map<List<GetModelResponse>>(models);
         }
 
@@ -47,6 +64,7 @@ namespace RentACarDotNetCore.Application.Services
             {
                 throw new NotFoundException($"{createModelRequest.BrandName} brand is not found.");
             }
+            createModelRequest.Name = createModelRequest.Name.ToUpper();
             Model model = _mapper.Map<Model>(createModelRequest);
             model.Brand = brand;
             _models.InsertOne(model);
