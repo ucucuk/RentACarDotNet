@@ -1,3 +1,4 @@
+
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using RentACarDotNetCore.Application.Services;
@@ -5,18 +6,23 @@ using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
 using RentACarDotNetCore.Utilities.Helpers;
 using System.Reflection;
+
+
 internal class Startup
 {
     private static void Main(string[] args)
     {
+
         var builder = WebApplication.CreateBuilder(args);
+
 
         // Add services to the container.
         /////////////////////////////////////////////////////////////////////
         ////////////////////////////////////////////////////////////////////////
         builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
-       
 
+
+        // MongoDB baðlantý ayarlarýný yapýlandýrma
         builder.Services.Configure<RentACarDatabaseSettings>(
                         builder.Configuration.GetSection(nameof(RentACarDatabaseSettings)));
         // apsettings.json dosyasýndaki RentACarDatabaseSettings baþlýðýndaki bilgileri

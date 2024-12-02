@@ -36,7 +36,7 @@ namespace RentACarDotNetCore.Controllers
         }
 
         // PUT api/<CarsController>/5
-        [HttpPut("{id}")]
+        [HttpPut]
         public ActionResult Put([FromBody] UpdateCarRequest updateCarRequest)
         {
             _carService.Update(updateCarRequest);

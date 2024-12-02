@@ -13,7 +13,7 @@ namespace Domain.Entities
         public string Id { get; set; } = string.Empty;
 
         [BsonElement("name")]
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; set; }
 
         [BsonElement("brand")]
         public Brand Brand { get; set; }
