@@ -26,7 +26,6 @@ namespace RentACarDotNetCore.Controllers
 
         // POST api/<UsersController>
         [HttpPost("CreateUser")]
-        [Authorize]
         public async Task<ActionResult> CreateUser([FromBody] CreateUserRequest createUserRequest)
         {
             var user = new User
@@ -71,7 +70,6 @@ namespace RentACarDotNetCore.Controllers
         }
 
         //GET: api/<UsersController>
-        [Authorize]
         [HttpGet("LogOut")]
         public async Task<ActionResult> Logout()
         {
