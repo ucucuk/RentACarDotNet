@@ -58,7 +58,7 @@ internal class Startup
         // MongoDB baðlantý ayarlarýný yapýlandýrma
         builder.Services.Configure<RentACarDatabaseSettings>(
                         builder.Configuration.GetSection(nameof(RentACarDatabaseSettings)));
-        // apsettings.json dosyasýndaki RentACarDatabaseSettings baþlýðýndaki bilgileri 
+        // apsettings.json dosyasýndaki RentACarDatabaseSettings baþlýðýndaki bilgileri  
         // RentACarDatabaseSettings classýndaki deðiþkenlere atar.
 
 
