@@ -1,11 +1,8 @@
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 ﻿
 namespace Domain.Entities
 {
-
-    using MongoDB.Bson;
-    using MongoDB.Bson.Serialization.Attributes;
-
-
     [BsonIgnoreExtraElements]
     public class Car
     {
