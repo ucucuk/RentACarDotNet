@@ -1,6 +1,4 @@
-﻿using Domain.Entities;
-
-namespace RentACarDotNetCore.Application.Requests.Brand
+﻿namespace RentACarDotNetCore.Application.Requests.Brand
 {
     public class CreateBrandRequest
     {

@@ -1,6 +1,4 @@
-﻿using Domain.Entities;
-
-namespace RentACarDotNetCore.Application.Requests
+﻿namespace RentACarDotNetCore.Application.Requests
 {
     public class UpdateCarRequest
     {

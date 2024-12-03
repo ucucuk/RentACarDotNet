@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests;
 using RentACarDotNetCore.Application.Responses;
@@ -10,6 +11,7 @@ namespace RentACarDotNetCore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class CarsController : ControllerBase
     {
         private readonly ICarService _carService;

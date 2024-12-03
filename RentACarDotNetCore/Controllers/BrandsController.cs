@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests.Brand;
@@ -12,6 +12,7 @@ namespace RentACarDotNetCore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class BrandsController : ControllerBase
     {
         private readonly IBrandService _brandService;

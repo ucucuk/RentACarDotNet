@@ -1,6 +1,4 @@
-﻿using Domain.Entities;
-using MongoDB.Bson.Serialization.Attributes;
-using RentACarDotNetCore.Application.DTOs;
+﻿using RentACarDotNetCore.Application.DTOs;
 
 namespace RentACarDotNetCore.Application.Responses
 {
