@@ -23,6 +23,7 @@ namespace RentACarDotNetCore.Controllers
         }
         // GET: api/<BrandsController>
         [HttpGet]
+        [Authorize(Roles = "admin,normal")]
         public ActionResult<List<GetBrandResponse>> Get()
         {
             return _brandService.Get();
@@ -30,6 +31,7 @@ namespace RentACarDotNetCore.Controllers
 
         // GET: api/<BrandsController>
         [HttpGet("getbrandwithmodels")]
+        [Authorize(Roles = "admin")]
         public ActionResult<List<GetBrandWithModelsResponse>> GetBrandWithModels()
         {
             return _brandService.GetBrandWithModels();

@@ -26,6 +26,7 @@ namespace RentACarDotNetCore.Controllers
 
         // POST api/<UsersController>
         [HttpPost("CreateUser")]
+        
         public async Task<ActionResult> CreateUser([FromBody] CreateUserRequest createUserRequest)
         {
             var user = new User
@@ -38,11 +39,11 @@ namespace RentACarDotNetCore.Controllers
             {
                 var role = new MongoIdentityRole
                 {
-                    Name = "admin",
-                    NormalizedName = "ADMIN"
+                    Name = "normal",
+                    NormalizedName = "NORMAL"
                 };
                 var resultRole = await _roleManager.CreateAsync(role);
-                await _userManager.AddToRoleAsync(user, "admin");
+                await _userManager.AddToRoleAsync(user, "normal");
 
                 await _signInManager.SignInAsync(user, false);
                 return Ok(result);
