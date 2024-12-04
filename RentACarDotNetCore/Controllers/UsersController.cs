@@ -1,8 +1,8 @@
 ﻿using AspNetCore.Identity.MongoDbCore.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RentACarDotNetCore.Application.Requests.User;
+using RentACarDotNetCore.Application.Services;
 using RentACarDotNetCore.Domain.Entities;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -13,45 +13,30 @@ namespace RentACarDotNetCore.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
+        private readonly IUserService _userService;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly RoleManager<MongoIdentityRole> _roleManager;
 
-        public UsersController(UserManager<User> userManager, SignInManager<User> signInManager, RoleManager<MongoIdentityRole> roleManager)
+        public UsersController(UserManager<User> userManager, SignInManager<User> signInManager, RoleManager<MongoIdentityRole> roleManager, IUserService userService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
+            _userService = userService;
+        }
+        // GET: api/<UsersController>
+        [HttpGet]
+        public ActionResult<List<User>> Get()
+        {
+            return _userService.Get();
         }
 
         // POST api/<UsersController>
         [HttpPost("CreateUser")]
-        
         public async Task<ActionResult> CreateUser([FromBody] CreateUserRequest createUserRequest)
         {
-            var user = new User
-            {
-                UserName = createUserRequest.UserName
-            };
-            var result = await _userManager.CreateAsync(user, createUserRequest.Password);
-
-            if (result.Succeeded)
-            {
-                var role = new MongoIdentityRole
-                {
-                    Name = "normal",
-                    NormalizedName = "NORMAL"
-                };
-                var resultRole = await _roleManager.CreateAsync(role);
-                await _userManager.AddToRoleAsync(user, "normal");
-
-                await _signInManager.SignInAsync(user, false);
-                return Ok(result);
-            }
-            else
-            {
-                return BadRequest(result);
-            }
+            return await _userService.Create(createUserRequest);
 
         }
 

@@ -1,7 +1,9 @@
 
 using AspNetCore.Identity.MongoDbCore.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using RentACarDotNetCore.Application.Services;
 using RentACarDotNetCore.Domain.Entities;
@@ -9,6 +11,7 @@ using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
 using RentACarDotNetCore.Utilities.Helpers;
 using System.Reflection;
+using System.Text;
 
 
 internal class Startup
@@ -27,12 +30,14 @@ internal class Startup
 
 
         //Authentication
+
+        //   Mongodb identity authentication
         builder.Services.AddAuthentication(option =>
         {
             option.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
             option.DefaultSignInScheme = IdentityConstants.ExternalScheme;
         }
-        ).AddIdentityCookies(o=> { });
+        ).AddIdentityCookies(o => { }) ;
 
         builder.Services.AddIdentityCore<User>(option =>
         {
@@ -41,7 +46,7 @@ internal class Startup
         }
         )
         .AddRoles<MongoIdentityRole>()
-        .AddMongoDbStores<User, MongoIdentityRole, Guid >(
+        .AddMongoDbStores<User, MongoIdentityRole, Guid>(
             builder.Configuration.GetValue<string>("RentACarDatabaseSettings:ConnectionString"),
             builder.Configuration.GetValue<string>("RentACarDatabaseSettings:DatabaseName"))
         .AddSignInManager()
@@ -55,6 +60,36 @@ internal class Startup
             //option.Cookie.Expiration = TimeSpan.FromMinutes(1);
             //option.Cookie.MaxAge = TimeSpan.FromMinutes(1);
         });
+        
+
+        // JWT Ayarlarýný Okuma
+        //var jwtSettings = builder.Configuration.GetSection("Jwt");
+        //var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
+
+        //builder.Services.AddAuthentication(option =>
+        //{
+        //    option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        //    option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        //}
+        //)
+        //    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+        //    {
+        //        options.RequireHttpsMetadata = false;
+        //        options.SaveToken = true;
+        //        options.TokenValidationParameters = new TokenValidationParameters
+        //        {
+        //            ValidateIssuer = true,
+        //            ValidateAudience = true,
+        //            ValidateLifetime = true,
+        //            ValidateIssuerSigningKey = true,
+        //            ValidIssuer = "your-issuer",
+        //            ValidAudience = "your-audience",
+        //            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes("your-secret-key"))
+        //        };
+        //    }) ;
+
+
+
         // MongoDB baðlantý ayarlarýný yapýlandýrma
         builder.Services.Configure<RentACarDatabaseSettings>(
                         builder.Configuration.GetSection(nameof(RentACarDatabaseSettings)));
@@ -81,6 +116,8 @@ internal class Startup
         builder.Services.AddScoped<ICarService, CarService>();
         // IModelService çaðrýldýðýnda ModelService classýný kullanacaðýný söylüyoruz.
 
+        builder.Services.AddScoped<IUserService, UserService>();
+        // IUserService çaðrýldýðýnda UserService classýný kullanacaðýný söylüyoruz.
 
         builder.Services.AddScoped<IStringConverter, StringConverter>();
         // IModelService çaðrýldýðýnda ModelService classýný kullanacaðýný söylüyoruz.
@@ -99,6 +136,7 @@ internal class Startup
         app.UseMiddleware<ErrorHandlerMiddleware>();
 
         app.UseAuthentication();
+        //app.UseRouting();
         app.UseAuthorization();
         //////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////
@@ -111,8 +149,6 @@ internal class Startup
         }
 
         app.UseHttpsRedirection();
-
-        app.UseAuthorization();
 
         app.MapControllers();
 

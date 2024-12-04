@@ -20,15 +20,16 @@ namespace RentACarDotNetCore.Application.Services
 
         public BrandService(IRentACarDatabaseSettings databaseSettings, IMongoClient mongoClient, IMapper mapper, IStringConverter stringConverter)
         {
-            _mapper = mapper;
+
             var watch = new System.Diagnostics.Stopwatch();
             watch.Start();
             var database = mongoClient.GetDatabase(databaseSettings.DatabaseName);
             _brands = database.GetCollection<Brand>(databaseSettings.BrandsCollectionName);
             _models = database.GetCollection<Model>(databaseSettings.ModelsCollectionName);
-            watch.Stop();
-            Console.WriteLine($"Uygulama Vakti: {watch.ElapsedMilliseconds} ms");
             _stringConverter = stringConverter;
+            _mapper = mapper;
+            watch.Stop();
+            Console.WriteLine($"Uygulama Vakti BrandService: {watch.ElapsedMilliseconds} ms");
         }
 
         public GetBrandResponse Get(string id)
@@ -46,20 +47,26 @@ namespace RentACarDotNetCore.Application.Services
             return _mapper.Map<List<GetBrandResponse>>(_brands.Find(brand => true).ToList());
         }
 
-        public List<GetBrandWithModelsResponse> GetBrandWithModels()
+        public async Task<List<GetBrandWithModelsResponse>> GetBrandWithModels()
         {
             var watch = new System.Diagnostics.Stopwatch();
             watch.Start();
             List<Brand> brands = _brands.Find(brand => true).ToList();
             watch.Stop();
-            Console.WriteLine($"Uygulama Vakti: {watch.ElapsedMilliseconds} ms");
+            Console.WriteLine($"Uygulama Vakti GetBrandWithModelsResponse _brands: {watch.ElapsedMilliseconds} ms");
             watch.Start();
             foreach (Brand brand in brands)
             {
-                brand.Models = _models.Find(model => model.Brand.Id == brand.Id).ToList();
+                brand.Models = await _models.Find(model => model.Brand.Id == brand.Id).ToListAsync();
+                brand.Models = await _models.Find(model => model.Brand.Id == brand.Id).ToListAsync();
+                brand.Models = await _models.Find(model => model.Brand.Id == brand.Id).ToListAsync();
+                brand.Models = await _models.Find(model => model.Brand.Id == brand.Id).ToListAsync();
+                brand.Models = await _models.Find(model => model.Brand.Id == brand.Id).ToListAsync();
+                brand.Models = await _models.Find(model => model.Brand.Id == brand.Id).ToListAsync();
+                brand.Models = await _models.Find(model => model.Brand.Id == brand.Id).ToListAsync();
             }
             watch.Stop();
-            Console.WriteLine($"Uygulama Vakti: {watch.ElapsedMilliseconds} ms");
+            Console.WriteLine($"Uygulama Vakti GetBrandWithModelsResponse _models: {watch.ElapsedMilliseconds} ms");
             return _mapper.Map<List<GetBrandWithModelsResponse>>(brands);
         }
 

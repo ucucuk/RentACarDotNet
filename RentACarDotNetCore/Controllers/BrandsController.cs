@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests.Brand;
 using RentACarDotNetCore.Application.Responses.Brand;
@@ -32,9 +31,9 @@ namespace RentACarDotNetCore.Controllers
         // GET: api/<BrandsController>
         [HttpGet("getbrandwithmodels")]
         //[Authorize(Roles = "admin")]
-        public ActionResult<List<GetBrandWithModelsResponse>> GetBrandWithModels()
+        public async Task<ActionResult<List<GetBrandWithModelsResponse>>> GetBrandWithModels()
         {
-            return _brandService.GetBrandWithModels();
+            return await _brandService.GetBrandWithModels();
         }
 
         // GET api/<BrandsController>/5

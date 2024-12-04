@@ -8,7 +8,7 @@ namespace RentACarDotNetCore.Application.Services
     public interface IBrandService
     {
         List<GetBrandResponse> Get();
-        List<GetBrandWithModelsResponse> GetBrandWithModels();
+        Task<List<GetBrandWithModelsResponse>> GetBrandWithModels();
         GetBrandResponse Get(string id);
         BrandDTO Create(CreateBrandRequest createBrandRequest);
         void Update(UpdateBrandRequest updateBrandRequest);
