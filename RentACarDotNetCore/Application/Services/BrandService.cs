@@ -21,9 +21,13 @@ namespace RentACarDotNetCore.Application.Services
         public BrandService(IRentACarDatabaseSettings databaseSettings, IMongoClient mongoClient, IMapper mapper, IStringConverter stringConverter)
         {
             _mapper = mapper;
+            var watch = new System.Diagnostics.Stopwatch();
+            watch.Start();
             var database = mongoClient.GetDatabase(databaseSettings.DatabaseName);
             _brands = database.GetCollection<Brand>(databaseSettings.BrandsCollectionName);
             _models = database.GetCollection<Model>(databaseSettings.ModelsCollectionName);
+            watch.Stop();
+            Console.WriteLine($"Uygulama Vakti: {watch.ElapsedMilliseconds} ms");
             _stringConverter = stringConverter;
         }
 
@@ -44,11 +48,18 @@ namespace RentACarDotNetCore.Application.Services
 
         public List<GetBrandWithModelsResponse> GetBrandWithModels()
         {
+            var watch = new System.Diagnostics.Stopwatch();
+            watch.Start();
             List<Brand> brands = _brands.Find(brand => true).ToList();
+            watch.Stop();
+            Console.WriteLine($"Uygulama Vakti: {watch.ElapsedMilliseconds} ms");
+            watch.Start();
             foreach (Brand brand in brands)
             {
                 brand.Models = _models.Find(model => model.Brand.Id == brand.Id).ToList();
             }
+            watch.Stop();
+            Console.WriteLine($"Uygulama Vakti: {watch.ElapsedMilliseconds} ms");
             return _mapper.Map<List<GetBrandWithModelsResponse>>(brands);
         }
 

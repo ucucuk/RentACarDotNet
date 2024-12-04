@@ -11,7 +11,7 @@ namespace RentACarDotNetCore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class CarsController : ControllerBase
     {
         private readonly ICarService _carService;
