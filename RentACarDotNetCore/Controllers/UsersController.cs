@@ -1,20 +1,23 @@
 ﻿using AspNetCore.Identity.MongoDbCore.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RentACarDotNetCore.Application.Requests.User;
 using RentACarDotNetCore.Application.Services;
 using RentACarDotNetCore.Domain.Entities;
+using System.Threading;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace RentACarDotNetCore.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly UserManager<User> _userManager;
+        private readonly UserManager<User> _userManager; //mongo identity
         private readonly SignInManager<User> _signInManager;
         private readonly RoleManager<MongoIdentityRole> _roleManager;
 
@@ -33,14 +36,13 @@ namespace RentACarDotNetCore.Controllers
         }
 
         // POST api/<UsersController>
-        [HttpPost("CreateUser")]
-        public async Task<ActionResult> CreateUser([FromBody] CreateUserRequest createUserRequest)
+        [HttpPost("CreateMongoIdentityUser")]
+        public async Task<ActionResult> CreateMongoIdentityUser([FromBody] CreateUserRequest createUserRequest)
         {
-            return await _userService.Create(createUserRequest);
-
+            return await _userService.CreateMongoIdentityUser(createUserRequest);
         }
 
-        [HttpPost("LoginUser")]
+        [HttpPost("LoginMongoIdentityUser")]
         public async Task<ActionResult> LoginUser([FromBody] LoginUserRequest loginUserRequest)
         {
             var result = await _signInManager.PasswordSignInAsync(loginUserRequest.UserName, loginUserRequest.Password, false, false);
@@ -54,6 +56,26 @@ namespace RentACarDotNetCore.Controllers
             }
 
         }
+        // POST api/<UsersController>
+        //[AllowAnonymous]
+        [HttpPost("CreateJWTUser")]
+        public ActionResult<JWTUser> CreateJWTUser([FromBody] CreateUserRequest createUserRequest)
+        {
+            return  _userService.CreateJWTUser(createUserRequest);
+        }
+
+
+        //[Route("authenticate")]
+        //[AllowAnonymous]
+        [HttpPost("LoginJWTUser")]
+        public ActionResult LoginJWTUser([FromBody] LoginUserRequest loginUserRequest)
+        {
+            var token = _userService.Authenticate(loginUserRequest.UserName, loginUserRequest.Password);
+                if(token == null)
+                return Unauthorized();
+
+                return Ok(new { token, loginUserRequest });
+        }
 
         //GET: api/<UsersController>
         [HttpGet("LogOut")]
@@ -63,5 +85,6 @@ namespace RentACarDotNetCore.Controllers
             return Ok("Logout successful.");
         }
     }
+
 
 }

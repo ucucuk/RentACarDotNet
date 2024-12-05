@@ -2,11 +2,15 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using RentACarDotNetCore.Application.Requests.User;
 using RentACarDotNetCore.Domain.Entities;
 using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Helpers;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace RentACarDotNetCore.Application.Services
 {
@@ -16,31 +20,40 @@ namespace RentACarDotNetCore.Application.Services
         private readonly RoleManager<MongoIdentityRole> _roleManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IMongoCollection<User> _users;
+        private readonly IMongoCollection<JWTUser> _JWTUsers;
         private readonly IMapper _mapper;
         private readonly IStringConverter _stringConverter;
-        public UserService(UserManager<User> userManager, IRentACarDatabaseSettings databaseSettings, 
-            IMongoClient mongoClient, IMapper mapper, IStringConverter stringConverter, 
-            RoleManager<MongoIdentityRole> roleManager, SignInManager<User> signInManager)
+        private readonly string key;
+        public UserService(IConfiguration configuration,
+            UserManager<User> userManager, RoleManager<MongoIdentityRole> roleManager, SignInManager<User> signInManager,
+            IRentACarDatabaseSettings databaseSettings, IMongoClient mongoClient,
+            IMapper mapper, IStringConverter stringConverter
+            )
         {
-            _userManager = userManager;
-            _mapper = mapper;
             var database = mongoClient.GetDatabase(databaseSettings.DatabaseName);
             _users = database.GetCollection<User>(databaseSettings.UsersCollectionName);
+            _JWTUsers = database.GetCollection<JWTUser>(databaseSettings.JWTUsersCollectionName);
+            _mapper = mapper;
             _stringConverter = stringConverter;
-            _roleManager = roleManager;
-            _signInManager = signInManager;
+            _userManager = userManager;  //mongo identity
+            _roleManager = roleManager;//mongo identity
+            _signInManager = signInManager;//mongo identity
+
+            var jwtSettings = configuration.GetSection("Jwt");
+            key = jwtSettings["Key"].ToString();
         }
         public List<User> Get()
         {
             List<User> users = _users.Find(user => true).ToList();
             return users;
         }
-        public async Task<ActionResult> Create(CreateUserRequest createUserRequest)
+        public async Task<ActionResult> CreateMongoIdentityUser(CreateUserRequest createUserRequest)
         {
             var user = new User
             {
                 UserName = createUserRequest.UserName
             };
+
             var result = await _userManager.CreateAsync(user, createUserRequest.Password);
 
             if (result.Succeeded)
@@ -54,12 +67,50 @@ namespace RentACarDotNetCore.Application.Services
                 await _userManager.AddToRoleAsync(user, "normal");
 
                 await _signInManager.SignInAsync(user, false);
-                return null;
+                return new CreatedResult("User created successfully", user);
             }
             else
             {
-                return null;
+                return new UnprocessableEntityResult();
             }
         }
+
+        public JWTUser CreateJWTUser(CreateUserRequest createUserRequest)
+        {
+            JWTUser JWTUser = new JWTUser
+            {
+                UserName = createUserRequest.UserName,
+                Password = createUserRequest.Password
+            };
+
+            _JWTUsers.InsertOne(JWTUser);
+            return JWTUser;
+        }
+
+        public string Authenticate(string username, string password)
+        {
+            var user = _JWTUsers.Find(jwtuser => jwtuser.UserName.Equals(username) && jwtuser.Password.Equals(password)).FirstOrDefault();
+            if (user == null)
+                return null;
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenKey = Encoding.ASCII.GetBytes(key);
+            var tokenDescriptor = new SecurityTokenDescriptor()
+            {
+                Subject = new ClaimsIdentity(new Claim[] {
+                    new Claim(ClaimTypes.Name, username)
+                }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(tokenKey),
+                    SecurityAlgorithms.HmacSha256Signature
+                    )
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return tokenHandler.WriteToken(token);
+        }
     }
+
+
 }
