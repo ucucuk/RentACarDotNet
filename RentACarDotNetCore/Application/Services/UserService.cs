@@ -1,12 +1,15 @@
 ﻿using AspNetCore.Identity.MongoDbCore.Models;
 using AutoMapper;
+using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
+using RentACarDotNetCore.Application.Requests;
 using RentACarDotNetCore.Application.Requests.User;
 using RentACarDotNetCore.Domain.Entities;
 using RentACarDotNetCore.Domain.Repositories;
+using RentACarDotNetCore.Utilities.Exceptions;
 using RentACarDotNetCore.Utilities.Helpers;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -49,6 +52,10 @@ namespace RentACarDotNetCore.Application.Services
         }
         public async Task<ActionResult> CreateMongoIdentityUser(CreateUserRequest createUserRequest)
         {
+            User existUser = await _userManager.FindByNameAsync(createUserRequest.UserName);
+            if (existUser != null)
+                throw new AlreadyExistsException($"{createUserRequest.UserName} username already exists.");
+
             var user = new User
             {
                 UserName = createUserRequest.UserName
@@ -77,6 +84,10 @@ namespace RentACarDotNetCore.Application.Services
 
         public JWTUser CreateJWTUser(CreateUserRequest createUserRequest)
         {
+            JWTUser existjwtUser = _JWTUsers.Find(jwtuser => jwtuser.UserName == createUserRequest.UserName).FirstOrDefault();
+            if (existjwtUser != null)
+                throw new AlreadyExistsException($"{createUserRequest.UserName} username already exists.");
+
             JWTUser JWTUser = new JWTUser
             {
                 UserName = createUserRequest.UserName,

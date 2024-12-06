@@ -1,4 +1,5 @@
 ﻿using AspNetCore.Identity.MongoDbCore.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +12,9 @@ using System.Threading;
 
 namespace RentACarDotNetCore.Controllers
 {
-    [Authorize]
+
+    
+    [Authorize(AuthenticationSchemes = "Identity.Application,"+ JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -42,6 +45,7 @@ namespace RentACarDotNetCore.Controllers
             return await _userService.CreateMongoIdentityUser(createUserRequest);
         }
 
+        [AllowAnonymous]
         [HttpPost("LoginMongoIdentityUser")]
         public async Task<ActionResult> LoginUser([FromBody] LoginUserRequest loginUserRequest)
         {
@@ -65,8 +69,7 @@ namespace RentACarDotNetCore.Controllers
         }
 
 
-        //[Route("authenticate")]
-        //[AllowAnonymous]
+        [AllowAnonymous]
         [HttpPost("LoginJWTUser")]
         public ActionResult LoginJWTUser([FromBody] LoginUserRequest loginUserRequest)
         {

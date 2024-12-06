@@ -30,16 +30,32 @@ internal class Startup
 
 
         //Authentication
-
-
         {
-            //   Mongodb identity authentication
+            // JWT + MONGO IDENTÝTY
+            var jwtSettings = builder.Configuration.GetSection("Jwt");
+            var key = Encoding.ASCII.GetBytes(jwtSettings["Key"].ToString());
+
             builder.Services.AddAuthentication(option =>
             {
-                option.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
-                option.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-            }
-        ).AddIdentityCookies(o => { });
+                //option.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+                //option.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+            })
+        .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+        {
+            options.RequireHttpsMetadata = false;
+            options.SaveToken = true;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key)
+                //ValidateLifetime = true,
+                //ValidIssuer = "your-issuer",
+                //ValidAudience = "your-audience",
+            };
+        })
+        .AddIdentityCookies(o => { });  //mongo identity
 
             builder.Services.AddIdentityCore<User>(option =>
             {
@@ -62,37 +78,67 @@ internal class Startup
                 //option.Cookie.Expiration = TimeSpan.FromMinutes(1);
                 //option.Cookie.MaxAge = TimeSpan.FromMinutes(1);
             });
-            //   Mongodb identity authentication
         }
 
-
-
-        // JWT Ayarlarýný Okuma
-        var jwtSettings = builder.Configuration.GetSection("Jwt");
-        var key = Encoding.ASCII.GetBytes(jwtSettings["Key"].ToString());
-
-        builder.Services.AddAuthentication(option =>
         {
-            option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        }
-        )
-            .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-            {
-                options.RequireHttpsMetadata = false;
-                options.SaveToken = true;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key)
-                    //ValidateLifetime = true,
-                    //ValidIssuer = "your-issuer",
-                    //ValidAudience = "your-audience",
-                };
-            });
+            //    // Sadece Mongo Identity
+            //    builder.Services.AddAuthentication(option =>
+            //    {
+            //        option.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+            //        option.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+            //    }
+            //     ).AddIdentityCookies(o => { });
 
+            //    builder.Services.AddIdentityCore<User>(option =>
+            //    {
+            //        //option.Password.RequireDigit = false;
+            //        //option.User.AllowedUserNameCharacters = new[] { "asd" };
+            //    }
+            //    )
+            //    .AddRoles<MongoIdentityRole>()
+            //    .AddMongoDbStores<User, MongoIdentityRole, Guid>(
+            //        builder.Configuration.GetValue<string>("RentACarDatabaseSettings:ConnectionString"),
+            //        builder.Configuration.GetValue<string>("RentACarDatabaseSettings:DatabaseName"))
+            //    .AddSignInManager()
+            //    .AddDefaultTokenProviders();
+
+            //    builder.Services.ConfigureApplicationCookie(option =>
+            //    {
+            //        option.Cookie.HttpOnly = true;
+            //        option.ExpireTimeSpan = TimeSpan.FromMinutes(1);
+            //        option.SlidingExpiration = true;
+            //        //option.Cookie.Expiration = TimeSpan.FromMinutes(1);
+            //        //option.Cookie.MaxAge = TimeSpan.FromMinutes(1);
+            //    });
+        }
+
+        {
+            // Sadece JWT
+            // JWT Ayarlarýný Okuma
+            //var jwtSettings = builder.Configuration.GetSection("Jwt");
+            //var key = Encoding.ASCII.GetBytes(jwtSettings["Key"].ToString());
+            //builder.Services.AddAuthentication(option =>
+            //{
+            //    option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            //    option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            //}
+            //)
+            //    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+            //    {
+            //        options.RequireHttpsMetadata = false;
+            //        options.SaveToken = true;
+            //        options.TokenValidationParameters = new TokenValidationParameters
+            //        {
+            //            ValidateIssuer = false,
+            //            ValidateAudience = false,
+            //            ValidateIssuerSigningKey = true,
+            //            IssuerSigningKey = new SymmetricSecurityKey(key)
+            //            //ValidateLifetime = true,
+            //            //ValidIssuer = "your-issuer",
+            //            //ValidAudience = "your-audience",
+            //        };
+            //    });
+        }
 
 
         // MongoDB baðlantý ayarlarýný yapýlandýrma
