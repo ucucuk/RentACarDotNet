@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Domain.Entities;
+using MernisServiceReference;
 using MongoDB.Driver;
 using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests;
@@ -7,6 +8,7 @@ using RentACarDotNetCore.Application.Responses;
 using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
 using RentACarDotNetCore.Utilities.Helpers;
+using System;
 
 namespace RentACarDotNetCore.Application.Services
 {
@@ -94,7 +96,7 @@ namespace RentACarDotNetCore.Application.Services
             var existingCar = _cars.Find(car => car.Id == id);
             if (existingCar == null)
                 throw new NotFoundException($"Car with id = {id} not found.");
-            
+
             _cars.DeleteOne(car => car.Id == id);
         }
 

@@ -39,6 +39,7 @@ namespace RentACarDotNetCore.Controllers
         }
 
         // POST api/<UsersController>
+        [AllowAnonymous]
         [HttpPost("CreateMongoIdentityUser")]
         public async Task<ActionResult> CreateMongoIdentityUser([FromBody] CreateUserRequest createUserRequest)
         {
@@ -61,7 +62,7 @@ namespace RentACarDotNetCore.Controllers
 
         }
         // POST api/<UsersController>
-        //[AllowAnonymous]
+        [AllowAnonymous]
         [HttpPost("CreateJWTUser")]
         public ActionResult<JWTUser> CreateJWTUser([FromBody] CreateUserRequest createUserRequest)
         {

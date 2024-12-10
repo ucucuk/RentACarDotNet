@@ -1,6 +1,7 @@
 ﻿using AspNetCore.Identity.MongoDbCore.Models;
 using AutoMapper;
 using Domain.Entities;
+using MernisServiceReference;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -11,6 +12,7 @@ using RentACarDotNetCore.Domain.Entities;
 using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
 using RentACarDotNetCore.Utilities.Helpers;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -52,13 +54,20 @@ namespace RentACarDotNetCore.Application.Services
         }
         public async Task<ActionResult> CreateMongoIdentityUser(CreateUserRequest createUserRequest)
         {
+            if(!CheckUser(createUserRequest.FirstName, createUserRequest.LastName, createUserRequest.NationalIdentity, createUserRequest.DateOfBirthYear))
+                throw new NotFoundException("Please check your information again. User could not be created.");
+
             User existUser = await _userManager.FindByNameAsync(createUserRequest.UserName);
             if (existUser != null)
                 throw new AlreadyExistsException($"{createUserRequest.UserName} username already exists.");
 
             var user = new User
             {
-                UserName = createUserRequest.UserName
+                UserName = createUserRequest.UserName,
+                 FirstName = createUserRequest.FirstName,
+                LastName = createUserRequest.LastName,
+                NationalIdentity = createUserRequest.NationalIdentity,
+                DateOfBirthYear = createUserRequest.DateOfBirthYear
             };
 
             var result = await _userManager.CreateAsync(user, createUserRequest.Password);
@@ -84,6 +93,9 @@ namespace RentACarDotNetCore.Application.Services
 
         public JWTUser CreateJWTUser(CreateUserRequest createUserRequest)
         {
+            if (!CheckUser(createUserRequest.FirstName, createUserRequest.LastName, createUserRequest.NationalIdentity, createUserRequest.DateOfBirthYear))
+                throw new NotFoundException("Please check your information again. User could not be created.");
+
             JWTUser existjwtUser = _JWTUsers.Find(jwtuser => jwtuser.UserName == createUserRequest.UserName).FirstOrDefault();
             if (existjwtUser != null)
                 throw new AlreadyExistsException($"{createUserRequest.UserName} username already exists.");
@@ -91,7 +103,11 @@ namespace RentACarDotNetCore.Application.Services
             JWTUser JWTUser = new JWTUser
             {
                 UserName = createUserRequest.UserName,
-                Password = createUserRequest.Password
+                Password = createUserRequest.Password,
+                FirstName = createUserRequest.FirstName,
+                LastName = createUserRequest.LastName,
+                NationalIdentity = createUserRequest.NationalIdentity,
+                DateOfBirthYear = createUserRequest.DateOfBirthYear
             };
 
             _JWTUsers.InsertOne(JWTUser);
@@ -120,6 +136,16 @@ namespace RentACarDotNetCore.Application.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
             return tokenHandler.WriteToken(token);
+        }
+
+        public bool CheckUser(string FirstName, string LastName, long NationalIdentity, int DateOfBirthYear)
+        {
+            KPSPublicSoapClient client = new KPSPublicSoapClient(KPSPublicSoapClient.EndpointConfiguration.KPSPublicSoap);
+
+            return client.TCKimlikNoDogrulaAsync(new TCKimlikNoDogrulaRequest
+                (new TCKimlikNoDogrulaRequestBody
+                (NationalIdentity, FirstName, LastName, DateOfBirthYear)))
+                .Result.Body.TCKimlikNoDogrulaResult;
         }
     }
 
