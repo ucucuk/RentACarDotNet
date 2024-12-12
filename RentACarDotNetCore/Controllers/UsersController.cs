@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RentACarDotNetCore.Application.Requests.User;
+using RentACarDotNetCore.Application.Responses.User;
 using RentACarDotNetCore.Application.Services;
 using RentACarDotNetCore.Domain.Entities;
 using System.Threading;
@@ -32,8 +33,9 @@ namespace RentACarDotNetCore.Controllers
             _userService = userService;
         }
         // GET: api/<UsersController>
+        [AllowAnonymous]
         [HttpGet]
-        public ActionResult<List<User>> Get()
+        public ActionResult<List<GetUserResponse>> Get()
         {
             return _userService.Get();
         }

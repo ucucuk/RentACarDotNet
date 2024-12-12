@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using RentACarDotNetCore.Application.Requests;
 using RentACarDotNetCore.Application.Requests.User;
+using RentACarDotNetCore.Application.Responses;
+using RentACarDotNetCore.Application.Responses.User;
 using RentACarDotNetCore.Domain.Entities;
 using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
@@ -47,10 +49,11 @@ namespace RentACarDotNetCore.Application.Services
             var jwtSettings = configuration.GetSection("Jwt");
             key = jwtSettings["Key"].ToString();
         }
-        public List<User> Get()
+        public List<GetUserResponse> Get()
         {
             List<User> users = _users.Find(user => true).ToList();
-            return users;
+
+            return _mapper.Map<List<GetUserResponse>>(users);
         }
         public async Task<ActionResult> CreateMongoIdentityUser(CreateUserRequest createUserRequest)
         {
@@ -138,13 +141,13 @@ namespace RentACarDotNetCore.Application.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public bool CheckUser(string FirstName, string LastName, long NationalIdentity, int DateOfBirthYear)
+        public bool CheckUser(string FirstName, string LastName, string NationalIdentity, int DateOfBirthYear)
         {
             KPSPublicSoapClient client = new KPSPublicSoapClient(KPSPublicSoapClient.EndpointConfiguration.KPSPublicSoap);
 
             return client.TCKimlikNoDogrulaAsync(new TCKimlikNoDogrulaRequest
                 (new TCKimlikNoDogrulaRequestBody
-                (NationalIdentity, FirstName, LastName, DateOfBirthYear)))
+                (Convert.ToInt64(NationalIdentity), FirstName, LastName, DateOfBirthYear)))
                 .Result.Body.TCKimlikNoDogrulaResult;
         }
     }

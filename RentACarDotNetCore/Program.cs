@@ -14,7 +14,7 @@ using System.Reflection;
 using System.Text;
 
 
-internal class Startup
+internal class Program
 {
     private static void Main(string[] args)
     {
@@ -182,6 +182,7 @@ internal class Startup
         builder.Services.AddSwaggerGen();
 
         var app = builder.Build();
+        //////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////
         app.UseMiddleware<ErrorHandlerMiddleware>();
