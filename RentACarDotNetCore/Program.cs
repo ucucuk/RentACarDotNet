@@ -5,11 +5,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
+using RedisEntegrationBusinessDotNetCore.Abstract;
+using RedisEntegrationBusinessDotNetCore.Concrete;
 using RentACarDotNetCore.Application.Services;
 using RentACarDotNetCore.Domain.Entities;
 using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
 using RentACarDotNetCore.Utilities.Helpers;
+using StackExchange.Redis;
+using System.Configuration;
 using System.Reflection;
 using System.Text;
 
@@ -28,6 +32,9 @@ internal class Program
         ////////////////////////////////////////////////////////////////////////
         builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
+        //Redis
+        var redisConnection = ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis"));
+        builder.Services.AddSingleton<IConnectionMultiplexer>(redisConnection);
 
         //Authentication
         {
@@ -37,8 +44,8 @@ internal class Program
 
             builder.Services.AddAuthentication(option =>
             {
-                //option.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
-                //option.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+                option.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+                option.DefaultSignInScheme = IdentityConstants.ExternalScheme;
             })
         .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
         {
@@ -157,6 +164,9 @@ internal class Program
                 new MongoClient(builder.Configuration.GetValue<string>("RentACarDatabaseSettings:ConnectionString")));
         // Mongodbye databasee nasýl baðlanacaðýný söylüyoruz.
 
+
+        // baðýmlýlýklar
+        builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
 
         builder.Services.AddScoped<IBrandService, BrandService>();
         // IBrandService çaðrýldýðýnda BrandService classýný kullanacaðýný söylüyoruz.
