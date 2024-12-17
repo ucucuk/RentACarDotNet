@@ -3,6 +3,7 @@ using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests.Brand;
 using RentACarDotNetCore.Application.Responses.Brand;
 using RentACarDotNetCore.Application.Services;
+using System.Diagnostics;
 
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -15,7 +16,6 @@ namespace RentACarDotNetCore.Controllers
     public class BrandsController : ControllerBase
     {
         private readonly IBrandService _brandService;
-
         public BrandsController(IBrandService brandService)
         {
             _brandService = brandService;
@@ -29,11 +29,28 @@ namespace RentACarDotNetCore.Controllers
         }
 
         // GET: api/<BrandsController>
+        [HttpGet("cache/getbrand")]
+        //[Authorize(Roles = "admin,normal")]
+        public ActionResult<List<GetBrandResponse>> GetCache()
+        {
+            return _brandService.GetCache();
+        }
+
+        // GET: api/<BrandsController>
         [HttpGet("getbrandwithmodels")]
         //[Authorize(Roles = "admin")]
         public async Task<ActionResult<List<GetBrandWithModelsResponse>>> GetBrandWithModels()
         {
             return await _brandService.GetBrandWithModels();
+        }
+
+
+        // GET: api/<BrandsController>
+        [HttpGet("cache/getbrandwithmodels")]
+        //[Authorize(Roles = "admin")]
+        public async Task<ActionResult<List<GetBrandWithModelsResponse>>> GetBrandWithModelsCache()
+        {
+            return await _brandService.GetBrandWithModelsCache();
         }
 
         // GET api/<BrandsController>/5

@@ -16,24 +16,23 @@ namespace RentACarDotNetCore.Controllers
         {
             _redisCacheService = redisCacheService;
         }
-
-        [HttpGet("cache/{key}")]
+        [HttpPost("cache/{key}")]
         public async Task<IActionResult> Get(string key)
         {
             return Ok(await _redisCacheService.GetValueAsync(key));
         }
 
-        [HttpPost("cache/set")]
-        public async Task<IActionResult> Set([FromBody] RedisCacheRequest redisCacheRequest)
+        [HttpPost("cache")]
+        public async Task<IActionResult> Post([FromBody] RedisCacheRequest redisCacheRequest)
         {
             await _redisCacheService.SetValueAsync(redisCacheRequest.Key, redisCacheRequest.Value);
             return Ok();
         }
-
         [HttpDelete("cache/{key}")]
-        public async Task<bool> Delete(string key)
+        public async Task<IActionResult> Delete(string key)
         {
-            return await _redisCacheService.Clear(key);
+            await _redisCacheService.Clear(key);
+            return Ok();
         }
     }
 }

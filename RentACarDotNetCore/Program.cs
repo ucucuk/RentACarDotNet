@@ -166,7 +166,7 @@ internal class Program
 
 
         // baðýmlýlýklar
-        builder.Services.AddScoped<IRedisCacheService, RedisCacheService>();
+        builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
 
         builder.Services.AddScoped<IBrandService, BrandService>();
         // IBrandService çaðrýldýðýnda BrandService classýný kullanacaðýný söylüyoruz.
