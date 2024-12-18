@@ -24,16 +24,16 @@ namespace RentACarDotNetCore.Controllers
 
         // GET: api/<ModelsController>
         [HttpGet]
-        public ActionResult<List<GetModelResponse>> Get()
+        public async Task<ActionResult<List<GetModelResponse>>> Get()
         {
-            return _modelService.Get();
+            return await _modelService.Get();
         }
 
         // GET api/<ModelsController>/5
         [HttpGet("{id}")]
-        public ActionResult<GetModelResponse> Get(string id)
+        public async Task<ActionResult<GetModelResponse>> Get(string id)
         {
-            GetModelResponse getModelResponse = _modelService.Get(id);
+            GetModelResponse getModelResponse = await _modelService.Get(id);
 
             if (getModelResponse == null)
             {

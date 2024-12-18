@@ -23,9 +23,9 @@ namespace RentACarDotNetCore.Controllers
 
         // GET: api/<CarsController>
         [HttpGet]
-        public ActionResult<List<GetCarResponse>> Get()
+        public async Task<ActionResult<List<GetCarResponse>>> Get()
         {
-            return _carService.Get();
+            return await _carService.Get();
         }
 
         // POST api/<CarsController>

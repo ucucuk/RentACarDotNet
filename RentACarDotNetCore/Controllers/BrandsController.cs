@@ -23,17 +23,9 @@ namespace RentACarDotNetCore.Controllers
         // GET: api/<BrandsController>
         [HttpGet]
         //[Authorize(Roles = "admin,normal")]
-        public ActionResult<List<GetBrandResponse>> Get()
+        public async Task<ActionResult<List<GetBrandResponse>>> Get()
         {
-            return _brandService.Get();
-        }
-
-        // GET: api/<BrandsController>
-        [HttpGet("cache/getbrand")]
-        //[Authorize(Roles = "admin,normal")]
-        public ActionResult<List<GetBrandResponse>> GetCache()
-        {
-            return _brandService.GetCache();
+            return await _brandService.Get();
         }
 
         // GET: api/<BrandsController>
@@ -44,20 +36,11 @@ namespace RentACarDotNetCore.Controllers
             return await _brandService.GetBrandWithModels();
         }
 
-
-        // GET: api/<BrandsController>
-        [HttpGet("cache/getbrandwithmodels")]
-        //[Authorize(Roles = "admin")]
-        public async Task<ActionResult<List<GetBrandWithModelsResponse>>> GetBrandWithModelsCache()
-        {
-            return await _brandService.GetBrandWithModelsCache();
-        }
-
         // GET api/<BrandsController>/5
         [HttpGet("{id}")]
-        public ActionResult<GetBrandResponse> Get(string id)
+        public async Task<ActionResult<GetBrandResponse>> Get(string id)
         {
-            GetBrandResponse brand = _brandService.Get(id);
+            GetBrandResponse brand = await _brandService.Get(id);
             if (brand == null)
             {
                 return NotFound($"Brand with Id = {id} not found.");

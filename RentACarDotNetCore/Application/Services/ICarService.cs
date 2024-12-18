@@ -7,7 +7,7 @@ namespace RentACarDotNetCore.Application.Services
 {
     public interface ICarService
     {
-        List<GetCarResponse> Get();
+        Task<List<GetCarResponse>> Get();
 
         CarDTO Create(CreateCarRequest createCarRequest);
         void Update(UpdateCarRequest updateCarRequest);
