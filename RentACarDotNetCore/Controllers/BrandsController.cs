@@ -27,9 +27,16 @@ namespace RentACarDotNetCore.Controllers
         {
             return await _brandService.Get();
         }
+		// GET: api/<BrandsController>
+		[HttpGet("getfromrabbitmq")]
+		//[Authorize(Roles = "admin,normal")]
+		public void GetFromRabbitMQ()
+		{
+		_brandService.GetFromRabbitMQ();
+		}
 
-        // GET: api/<BrandsController>
-        [HttpGet("getbrandwithmodels")]
+		// GET: api/<BrandsController>
+		[HttpGet("getbrandwithmodels")]
         //[Authorize(Roles = "admin")]
         public async Task<ActionResult<List<GetBrandWithModelsResponse>>> GetBrandWithModels()
         {

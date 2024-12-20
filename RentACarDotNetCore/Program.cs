@@ -1,10 +1,18 @@
 
 using AspNetCore.Identity.MongoDbCore.Models;
+using EmailService.Application.Abstarct;
+using EmailService.Application.Concrete;
+using EmailService.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
+using RabbitMQ.Application.Abstract;
+using RabbitMQ.Application.Concrete;
+using RabbitMQ.Infrastructure.Abstract;
+using RabbitMQ.Infrastructure.Concrete;
 using RedisEntegrationBusinessDotNetCore.Abstract;
 using RedisEntegrationBusinessDotNetCore.Concrete;
 using RentACarDotNetCore.Application.Services;
@@ -151,11 +159,12 @@ internal class Program
         // MongoDB baðlantý ayarlarýný yapýlandýrma
         builder.Services.Configure<RentACarDatabaseSettings>(
                         builder.Configuration.GetSection(nameof(RentACarDatabaseSettings)));
-        // apsettings.json dosyasýndaki RentACarDatabaseSettings baþlýðýndaki bilgileri  
-        // RentACarDatabaseSettings classýndaki deðiþkenlere atar.
+		// apsettings.json dosyasýndaki RentACarDatabaseSettings baþlýðýndaki bilgileri  
+		// RentACarDatabaseSettings classýndaki deðiþkenlere atar.
 
+		builder.Services.Configure<MailSettings>(builder.Configuration.GetSection(nameof(MailSettings)));
 
-        builder.Services.AddSingleton<IRentACarDatabaseSettings>(sp =>
+		builder.Services.AddSingleton<IRentACarDatabaseSettings>(sp =>
             sp.GetRequiredService<IOptions<RentACarDatabaseSettings>>().Value);
         // IRentACarDatabaseSettings interface çaðrýldýðýnda RentACarDatabaseSettings classýný kullanacaðýný setliyoruz.
 
@@ -167,8 +176,12 @@ internal class Program
 
         // baðýmlýlýklar
         builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
+		builder.Services.AddSingleton<IRabbitMQService, RabbitMQService>();
+		builder.Services.AddScoped<IMailService, MailService>();
+		builder.Services.AddScoped<IPublisher, Publisher>();
+		builder.Services.AddScoped<IConsumer, Consumer>();
 
-        builder.Services.AddScoped<IBrandService, BrandService>();
+		builder.Services.AddScoped<IBrandService, BrandService>();
         // IBrandService çaðrýldýðýnda BrandService classýný kullanacaðýný söylüyoruz.
 
         builder.Services.AddScoped<IModelService, ModelService>();

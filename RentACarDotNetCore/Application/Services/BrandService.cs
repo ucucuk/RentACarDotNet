@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
 using Domain.Entities;
+using EmailService.Application.Abstarct;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+using RabbitMQ.Infrastructure.Abstract;
+using RabbitMQ.Infrastructure.Concrete;
 using RedisEntegrationBusinessDotNetCore.Abstract;
 using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests.Brand;
@@ -9,6 +12,7 @@ using RentACarDotNetCore.Application.Responses.Brand;
 using RentACarDotNetCore.Domain.Repositories;
 using RentACarDotNetCore.Utilities.Exceptions;
 using RentACarDotNetCore.Utilities.Helpers;
+using System.Text.Json;
 
 namespace RentACarDotNetCore.Application.Services
 {
@@ -19,8 +23,12 @@ namespace RentACarDotNetCore.Application.Services
 		private readonly IMapper _mapper;
 		private readonly IStringConverter _stringConverter;
 		private readonly IRedisCacheService _redisCacheService;
+		private readonly IPublisher _publisher;
+		private readonly IConsumer _consumer;
+		private readonly IMailService _mailService;
 
-		public BrandService(IRentACarDatabaseSettings databaseSettings, IMongoClient mongoClient, IRedisCacheService redisCacheService, IMapper mapper, IStringConverter stringConverter)
+		public BrandService(IRentACarDatabaseSettings databaseSettings, IMongoClient mongoClient, IRedisCacheService redisCacheService,
+			IMapper mapper, IStringConverter stringConverter, IPublisher publisher, IConsumer consumer, IMailService mailService)
 		{
 			var watch = new System.Diagnostics.Stopwatch();
 			watch.Start();
@@ -30,8 +38,11 @@ namespace RentACarDotNetCore.Application.Services
 			_stringConverter = stringConverter;
 			_mapper = mapper;
 			_redisCacheService = redisCacheService;
+			_publisher = publisher;
 			watch.Stop();
 			Console.WriteLine($"Uygulama Vakti BrandService: {watch.ElapsedMilliseconds} ms");
+			_consumer = consumer;
+			_mailService = mailService;
 		}
 
 		public async Task<GetBrandResponse> Get(string id)
@@ -71,7 +82,20 @@ namespace RentACarDotNetCore.Application.Services
 			}
 			watch.Stop();
 			Console.WriteLine($"Uygulama Vakti Cache: {watch.ElapsedMilliseconds} ms");
+			_mailService.SendMail("konu", JsonSerializer.Serialize(_mapper.Map<List<GetBrandResponse>>(cacheDataBrands)), "ulascucuk@gmail.com");
+
+			_publisher.Publish("brands", JsonSerializer.Serialize(_mapper.Map<List<GetBrandResponse>>(cacheDataBrands)));
 			return _mapper.Map<List<GetBrandResponse>>(cacheDataBrands);
+		}
+
+		public async void GetFromRabbitMQ()
+		{
+			var watch = new System.Diagnostics.Stopwatch();
+			watch.Start();
+			await _consumer.Consume("brands");
+			watch.Stop();
+			Console.WriteLine($"Uygulama Vakti Rabbitmq: {watch.ElapsedMilliseconds} ms");
+
 		}
 
 		public async Task<List<GetBrandWithModelsResponse>> GetBrandWithModels()
