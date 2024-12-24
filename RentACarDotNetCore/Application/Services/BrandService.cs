@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Domain.Entities;
 using EmailService.Application.Abstarct;
+using EmailService.Application.DTOs;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using RabbitMQ.Infrastructure.Abstract;
@@ -25,7 +26,7 @@ namespace RentACarDotNetCore.Application.Services
 		private readonly IRedisCacheService _redisCacheService;
 		private readonly IPublisher _publisher;
 		private readonly IConsumer _consumer;
-		private readonly IMailService _mailService;
+		
 
 		public BrandService(IRentACarDatabaseSettings databaseSettings, IMongoClient mongoClient, IRedisCacheService redisCacheService,
 			IMapper mapper, IStringConverter stringConverter, IPublisher publisher, IConsumer consumer, IMailService mailService)
@@ -42,7 +43,6 @@ namespace RentACarDotNetCore.Application.Services
 			watch.Stop();
 			Console.WriteLine($"Uygulama Vakti BrandService: {watch.ElapsedMilliseconds} ms");
 			_consumer = consumer;
-			_mailService = mailService;
 		}
 
 		public async Task<GetBrandResponse> Get(string id)
@@ -73,29 +73,17 @@ namespace RentACarDotNetCore.Application.Services
 
 		public async Task<List<GetBrandResponse>> Get()
 		{
-			var watch = new System.Diagnostics.Stopwatch();
-			watch.Start();
 			var cacheDataBrands = await _redisCacheService.GetOrAddAsync("allbrands", async () => await _brands.Find(brand => true).ToListAsync());
 			if (cacheDataBrands.Count == 0)
 			{
 				cacheDataBrands = _brands.Find(brand => true).ToList();
 			}
-			watch.Stop();
-			Console.WriteLine($"Uygulama Vakti Cache: {watch.ElapsedMilliseconds} ms");
-			_mailService.SendMail("konu", JsonSerializer.Serialize(_mapper.Map<List<GetBrandResponse>>(cacheDataBrands)), "ulascucuk@gmail.com");
-
-			_publisher.Publish("brands", JsonSerializer.Serialize(_mapper.Map<List<GetBrandResponse>>(cacheDataBrands)));
 			return _mapper.Map<List<GetBrandResponse>>(cacheDataBrands);
 		}
 
-		public async void GetFromRabbitMQ()
+		public async void SendMailFromRabbitMQ()
 		{
-			var watch = new System.Diagnostics.Stopwatch();
-			watch.Start();
-			await _consumer.Consume("brands");
-			watch.Stop();
-			Console.WriteLine($"Uygulama Vakti Rabbitmq: {watch.ElapsedMilliseconds} ms");
-
+			await _consumer.ConsumeMailFromRabbitMQ();
 		}
 
 		public async Task<List<GetBrandWithModelsResponse>> GetBrandWithModels()
@@ -123,6 +111,8 @@ namespace RentACarDotNetCore.Application.Services
 			createBrandRequest.Name = _stringConverter.ConvertTRCharToENChar(createBrandRequest.Name.ToUpper());
 			Brand brand = _mapper.Map<Brand>(createBrandRequest);
 			_brands.InsertOne(brand);
+
+			_publisher.PublishMail(new MailDTO<BrandDTO>("", "", _mapper.Map<BrandDTO>(brand)));
 			return _mapper.Map<BrandDTO>(brand);
 		}
 

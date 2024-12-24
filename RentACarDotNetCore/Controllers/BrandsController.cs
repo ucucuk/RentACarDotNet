@@ -28,11 +28,11 @@ namespace RentACarDotNetCore.Controllers
             return await _brandService.Get();
         }
 		// GET: api/<BrandsController>
-		[HttpGet("getfromrabbitmq")]
+		[HttpGet("SendMailFromRabbitMQ")]
 		//[Authorize(Roles = "admin,normal")]
-		public void GetFromRabbitMQ()
+		public void SendMailFromRabbitMQ()
 		{
-		_brandService.GetFromRabbitMQ();
+		_brandService.SendMailFromRabbitMQ();
 		}
 
 		// GET: api/<BrandsController>

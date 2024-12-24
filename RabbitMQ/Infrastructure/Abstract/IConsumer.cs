@@ -9,5 +9,6 @@ namespace RabbitMQ.Infrastructure.Abstract
 	public interface IConsumer
 	{
 		Task Consume(string queueName);
+		Task ConsumeMailFromRabbitMQ();
 	}
 }

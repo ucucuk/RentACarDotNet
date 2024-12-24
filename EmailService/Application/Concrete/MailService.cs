@@ -1,15 +1,11 @@
 ﻿using EmailService.Application.Abstarct;
+using EmailService.Application.DTOs;
 using EmailService.Infrastructure;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
-using Microsoft.VisualBasic.FileIO;
 using MimeKit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace EmailService.Application.Concrete
 {
@@ -22,15 +18,38 @@ namespace EmailService.Application.Concrete
 			_mailSettings = mailSettings.Value;
 		}
 
-		public void SendMail(string subject, string body, string mail)
+		public void SendMail<T>(MailDTO<T> mailDTO) where T : class
 		{
 			var email = new MimeMessage();
 
 			email.From.Add(new MailboxAddress(_mailSettings.DisplayName, _mailSettings.From));
-			email.To.Add(MailboxAddress.Parse(mail));
-			email.Subject = subject;
+			email.To.Add(MailboxAddress.Parse(mailDTO.Mail));
+			email.Subject = mailDTO.Subject;
 			email.Body = new TextPart(MimeKit.Text.TextFormat.Html)
-			{ Text = body };
+			{ Text = JsonConvert.SerializeObject(mailDTO.body) };
+			;
+			using (var client = new SmtpClient())
+			{
+
+				client.Connect(_mailSettings.Host, _mailSettings.Port, SecureSocketOptions.StartTls);
+				client.Authenticate(_mailSettings.UserName, _mailSettings.Password);
+				client.Send(email);
+				client.Disconnect(true);
+			}
+		}
+
+		public void SendMailFromRabbitMQ<T>(MailDTO<T> mailDTO) where T : class
+		{
+			if(mailDTO.Mail == "")
+				throw new FileNotFoundException("You should login with your email.");
+
+			var email = new MimeMessage();
+
+			email.From.Add(new MailboxAddress(_mailSettings.DisplayName, _mailSettings.From));
+			email.To.Add(MailboxAddress.Parse(mailDTO.Mail));
+			email.Subject = mailDTO.Subject;
+			email.Body = new TextPart(MimeKit.Text.TextFormat.Html)
+			{ Text = JsonConvert.SerializeObject(mailDTO.body, Formatting.Indented) };
 
 			using (var client = new SmtpClient())
 			{
@@ -41,5 +60,7 @@ namespace EmailService.Application.Concrete
 				client.Disconnect(true);
 			}
 		}
+
+
 	}
 }

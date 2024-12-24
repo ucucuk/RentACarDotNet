@@ -8,7 +8,7 @@ namespace RentACarDotNetCore.Application.Services
 	public interface IBrandService
 	{
 
-		void GetFromRabbitMQ();
+		void SendMailFromRabbitMQ();
 		Task<List<GetBrandResponse>> Get();
 		Task<List<GetBrandWithModelsResponse>> GetBrandWithModels();
 		Task<GetBrandResponse> Get(string id);
