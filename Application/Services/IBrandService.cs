@@ -1,12 +1,14 @@
-﻿using Domain.Entities;
-using RentACarDotNetCore.Application.DTOs;
-using RentACarDotNetCore.Application.Requests.Brand;
-using RentACarDotNetCore.Application.Responses.Brand;
+﻿using Application.DTOs;
+using Application.Requests.Brand;
+using Application.Responses.Brand;
+using Domain.Entities;
 
-namespace RentACarDotNetCore.Application.Services
+namespace Application.Services
 {
 	public interface IBrandService
 	{
+
+		void SendMailFromRabbitMQ();
 		Task<List<GetBrandResponse>> Get();
 		Task<List<GetBrandWithModelsResponse>> GetBrandWithModels();
 		Task<GetBrandResponse> Get(string id);

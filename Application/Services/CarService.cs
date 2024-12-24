@@ -1,17 +1,13 @@
-﻿using AutoMapper;
+﻿using Application.DTOs;
+using Application.Requests.Car;
+using Application.Responses.Car;
+using AutoMapper;
 using Domain.Entities;
-using EmailService.Application.DTOs;
 using MongoDB.Driver;
-using RabbitMQ.Infrastructure.Abstract;
 using RedisEntegrationBusinessDotNetCore.Abstract;
-using RentACarDotNetCore.Application.DTOs;
-using RentACarDotNetCore.Application.Requests;
-using RentACarDotNetCore.Application.Responses;
 using RentACarDotNetCore.Domain.Repositories;
-using UtilitiesClassLibrary.Exceptions;
-using UtilitiesClassLibrary.Helpers;
 
-namespace RentACarDotNetCore.Application.Services
+namespace Application.Services
 {
 	public class CarService : ICarService
 	{
@@ -21,9 +17,8 @@ namespace RentACarDotNetCore.Application.Services
 		private readonly IMapper _mapper;
 		private readonly IStringConverter _stringConverter;
 		private readonly IRedisCacheService _redisCacheService;
-		private readonly IPublisher _publisher;
 
-		public CarService(IRentACarDatabaseSettings databaseSettings, IMongoClient mongoClient, IRedisCacheService redisCacheService, IMapper mapper, IStringConverter stringConverter, IPublisher publisher)
+		public CarService(IRentACarDatabaseSettings databaseSettings, IMongoClient mongoClient, IRedisCacheService redisCacheService, IMapper mapper, IStringConverter stringConverter)
 		{
 
 			_mapper = mapper;
@@ -33,7 +28,6 @@ namespace RentACarDotNetCore.Application.Services
 			_cars = database.GetCollection<Car>(databaseSettings.CarsCollectionName);
 			_stringConverter = stringConverter;
 			_redisCacheService = redisCacheService;
-			_publisher = publisher;
 		}
 		public async Task<List<GetCarResponse>> Get()
 		{
@@ -70,7 +64,6 @@ namespace RentACarDotNetCore.Application.Services
 			Car car = _mapper.Map<Car>(createCarRequest);
 			car.Model = model;
 			_cars.InsertOne(car);
-			_publisher.PublishMail(new MailDTO<CarDTO>("", "Add Car", "Car creation process attempted. Check result !", _mapper.Map<CarDTO>(car)));
 			return _mapper.Map<CarDTO>(car);
 		}
 
@@ -109,8 +102,7 @@ namespace RentACarDotNetCore.Application.Services
 			if (existingCar == null)
 				throw new NotFoundException($"Car with id = {id} not found.");
 
-			var result =_cars.DeleteOne(car => car.Id == id);
-			_publisher.PublishMail(new MailDTO<DeleteResult>("", "Delete Car", $"Car with id = {id} deletion process attempted. Check result !", result));
+			_cars.DeleteOne(car => car.Id == id);
 		}
 
 

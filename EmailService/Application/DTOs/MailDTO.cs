@@ -6,17 +6,20 @@ namespace EmailService.Application.DTOs
 	{
 		public string Mail { get; set; }
 		public string? Subject { get; set; }
-		public T? body { get; set; }
+
+		public string? Text { get; set; }
+		public T? Body { get; set; }
 
 		public MailDTO()
 		{
 		}
 
-		public MailDTO(string mail , string? subject, T? body)
+		public MailDTO(string mail, string? subject, string? text, T? body)
 		{
 			Mail = mail;
 			Subject = subject;
-			this.body = body;
+			Body = body;
+			Text = text;
 		}
 	}
 }

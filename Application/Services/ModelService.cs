@@ -1,17 +1,13 @@
-﻿using AutoMapper;
+﻿using Application.DTOs;
+using Application.Requests.Model;
+using Application.Responses.Model;
+using AutoMapper;
 using Domain.Entities;
-using EmailService.Application.DTOs;
 using MongoDB.Driver;
-using RabbitMQ.Infrastructure.Abstract;
 using RedisEntegrationBusinessDotNetCore.Abstract;
-using RentACarDotNetCore.Application.DTOs;
-using RentACarDotNetCore.Application.Requests.Model;
-using RentACarDotNetCore.Application.Responses.Model;
 using RentACarDotNetCore.Domain.Repositories;
-using UtilitiesClassLibrary.Exceptions;
-using UtilitiesClassLibrary.Helpers;
 
-namespace RentACarDotNetCore.Application.Services
+namespace Application.Services
 {
 	public class ModelService : IModelService
 	{
@@ -21,8 +17,7 @@ namespace RentACarDotNetCore.Application.Services
 		private readonly IMapper _mapper;
 		private readonly IStringConverter _stringConverter;
 		private readonly IRedisCacheService _redisCacheService;
-		private readonly IPublisher _publisher;
-		public ModelService(IRentACarDatabaseSettings databaseSettings, IRedisCacheService redisCacheService, IMongoClient mongoClient, IMapper mapper, IStringConverter stringConverter, IPublisher publisher)
+		public ModelService(IRentACarDatabaseSettings databaseSettings, IRedisCacheService redisCacheService, IMongoClient mongoClient, IMapper mapper, IStringConverter stringConverter)
 		{
 			_mapper = mapper;
 			var database = mongoClient.GetDatabase(databaseSettings.DatabaseName);
@@ -30,7 +25,6 @@ namespace RentACarDotNetCore.Application.Services
 			_brands = database.GetCollection<Brand>(databaseSettings.BrandsCollectionName);
 			_stringConverter = stringConverter;
 			_redisCacheService = redisCacheService;
-			_publisher = publisher;
 		}
 
 		public async Task<GetModelResponse> Get(string id)
@@ -71,8 +65,6 @@ namespace RentACarDotNetCore.Application.Services
 			Model model = _mapper.Map<Model>(createModelRequest);
 			model.Brand = brand;
 			_models.InsertOne(model);
-
-			_publisher.PublishMail(new MailDTO<ModelDTO>("", "Add Model", "Model creation process attempted. Check result", _mapper.Map<ModelDTO>(model)));
 			return _mapper.Map<ModelDTO>(model);
 		}
 
@@ -116,9 +108,7 @@ namespace RentACarDotNetCore.Application.Services
 
 		public void Delete(string id)
 		{
-			var result = _models.DeleteOne(model => model.Id == id);
-			_publisher.PublishMail(new MailDTO<DeleteResult>("", "Delete Model", $"Model with id = {id} deletion process attempted.Check result !", result));
-
+			_models.DeleteOne(model => model.Id == id);
 		}
 	}
 }

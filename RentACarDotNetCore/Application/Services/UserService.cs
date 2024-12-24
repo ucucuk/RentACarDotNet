@@ -1,27 +1,23 @@
 ﻿using AspNetCore.Identity.MongoDbCore.Models;
 using AutoMapper;
-using Domain.Entities;
 using MernisServiceReference;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
-using RentACarDotNetCore.Application.Requests;
 using RentACarDotNetCore.Application.Requests.User;
-using RentACarDotNetCore.Application.Responses;
 using RentACarDotNetCore.Application.Responses.User;
 using RentACarDotNetCore.Domain.Entities;
 using RentACarDotNetCore.Domain.Repositories;
-using RentACarDotNetCore.Utilities.Exceptions;
-using RentACarDotNetCore.Utilities.Helpers;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using UtilitiesClassLibrary.Exceptions;
+using UtilitiesClassLibrary.Helpers;
 
 namespace RentACarDotNetCore.Application.Services
 {
-    public class UserService : IUserService
+	public class UserService : IUserService
     {
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<MongoIdentityRole> _roleManager;

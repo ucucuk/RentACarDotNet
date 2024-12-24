@@ -16,11 +16,11 @@ namespace RabbitMQ.Infrastructure.Concrete
 	public class Publisher : IPublisher
 	{
 		private readonly IRabbitMQService _rabbitMQService;
-		private readonly IRedisCacheService _redisCacheService;
-		public Publisher(IRabbitMQService rabbitMQService, IRedisCacheService redisCacheService)
+		private readonly IConsumer _consumer;
+		public Publisher(IRabbitMQService rabbitMQService, IConsumer consumer)
 		{
 			_rabbitMQService = rabbitMQService;
-			_redisCacheService = redisCacheService;
+			_consumer = consumer;
 		}
 
 		public async Task Publish(string queueName, string message)
@@ -60,6 +60,7 @@ namespace RabbitMQ.Infrastructure.Concrete
 
 				}
 			}
+			_consumer.ConsumeMailFromRabbitMQ();
 		}
 	}
 }

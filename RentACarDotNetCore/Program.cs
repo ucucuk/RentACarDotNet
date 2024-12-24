@@ -18,12 +18,12 @@ using RedisEntegrationBusinessDotNetCore.Concrete;
 using RentACarDotNetCore.Application.Services;
 using RentACarDotNetCore.Domain.Entities;
 using RentACarDotNetCore.Domain.Repositories;
-using RentACarDotNetCore.Utilities.Exceptions;
-using RentACarDotNetCore.Utilities.Helpers;
 using StackExchange.Redis;
 using System.Configuration;
 using System.Reflection;
 using System.Text;
+using UtilitiesClassLibrary.Exceptions;
+using UtilitiesClassLibrary.Helpers;
 
 
 internal class Program

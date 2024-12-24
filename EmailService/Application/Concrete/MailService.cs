@@ -6,13 +6,13 @@ using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using Newtonsoft.Json;
+using UtilitiesClassLibrary.Exceptions;
 
 namespace EmailService.Application.Concrete
 {
 	public class MailService : IMailService
 	{
 		private readonly MailSettings _mailSettings;
-
 		public MailService(IOptions<MailSettings> mailSettings)
 		{
 			_mailSettings = mailSettings.Value;
@@ -26,7 +26,7 @@ namespace EmailService.Application.Concrete
 			email.To.Add(MailboxAddress.Parse(mailDTO.Mail));
 			email.Subject = mailDTO.Subject;
 			email.Body = new TextPart(MimeKit.Text.TextFormat.Html)
-			{ Text = JsonConvert.SerializeObject(mailDTO.body) };
+			{ Text = JsonConvert.SerializeObject(mailDTO.Body) };
 			;
 			using (var client = new SmtpClient())
 			{
@@ -40,8 +40,8 @@ namespace EmailService.Application.Concrete
 
 		public void SendMailFromRabbitMQ<T>(MailDTO<T> mailDTO) where T : class
 		{
-			if(mailDTO.Mail == "")
-				throw new FileNotFoundException("You should login with your email.");
+			if (mailDTO.Mail == "")
+				throw new NotFoundException("You should login with your email.");
 
 			var email = new MimeMessage();
 
@@ -49,7 +49,7 @@ namespace EmailService.Application.Concrete
 			email.To.Add(MailboxAddress.Parse(mailDTO.Mail));
 			email.Subject = mailDTO.Subject;
 			email.Body = new TextPart(MimeKit.Text.TextFormat.Html)
-			{ Text = JsonConvert.SerializeObject(mailDTO.body, Formatting.Indented) };
+			{ Text = mailDTO.Text+ "<br><br>" + JsonConvert.SerializeObject(mailDTO.Body, Formatting.Indented) };
 
 			using (var client = new SmtpClient())
 			{
