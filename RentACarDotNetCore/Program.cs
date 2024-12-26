@@ -5,7 +5,6 @@ using EmailService.Application.Concrete;
 using EmailService.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
@@ -18,8 +17,9 @@ using RedisEntegrationBusinessDotNetCore.Concrete;
 using RentACarDotNetCore.Application.Services;
 using RentACarDotNetCore.Domain.Entities;
 using RentACarDotNetCore.Domain.Repositories;
+using Serilog;
+using Serilog.Sinks.Elasticsearch;
 using StackExchange.Redis;
-using System.Configuration;
 using System.Reflection;
 using System.Text;
 using UtilitiesClassLibrary.Exceptions;
@@ -28,205 +28,266 @@ using UtilitiesClassLibrary.Helpers;
 
 internal class Program
 {
-    private static void Main(string[] args)
-    {
+	private static void Main(string[] args)
+	{
+		ConfigureLogging();
+		//createhost(args); 
+	
 
-        var builder = WebApplication.CreateBuilder(args);
+		var builder = WebApplication.CreateBuilder(args);
+
+		// Add services to the container.
+		/////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////
+		builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
+		//Redis
+		var redisConnection = ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis"));
+		builder.Services.AddSingleton<IConnectionMultiplexer>(redisConnection);
+
+		//Authentication
+		{
+			// JWT + MONGO IDENTÝTY
+			var jwtSettings = builder.Configuration.GetSection("Jwt");
+			var key = Encoding.ASCII.GetBytes(jwtSettings["Key"].ToString());
+
+			builder.Services.AddAuthentication(option =>
+			{
+				option.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+				option.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+			})
+		.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+		{
+			options.RequireHttpsMetadata = false;
+			options.SaveToken = true;
+			options.TokenValidationParameters = new TokenValidationParameters
+			{
+				ValidateIssuer = false,
+				ValidateAudience = false,
+				ValidateIssuerSigningKey = true,
+				IssuerSigningKey = new SymmetricSecurityKey(key)
+				//ValidateLifetime = true,
+				//ValidIssuer = "your-issuer",
+				//ValidAudience = "your-audience",
+			};
+		})
+		.AddIdentityCookies(o => { });  //mongo identity
+
+			builder.Services.AddIdentityCore<User>(option =>
+			{
+				//option.Password.RequireDigit = false;
+				//option.User.AllowedUserNameCharacters = new[] { "asd" };
+			}
+			)
+			.AddRoles<MongoIdentityRole>()
+			.AddMongoDbStores<User, MongoIdentityRole, Guid>(
+				builder.Configuration.GetValue<string>("RentACarDatabaseSettings:ConnectionString"),
+				builder.Configuration.GetValue<string>("RentACarDatabaseSettings:DatabaseName"))
+			.AddSignInManager()
+			.AddDefaultTokenProviders();
+
+			builder.Services.ConfigureApplicationCookie(option =>
+			{
+				option.Cookie.HttpOnly = true;
+				option.ExpireTimeSpan = TimeSpan.FromMinutes(1);
+				option.SlidingExpiration = true;
+				//option.Cookie.Expiration = TimeSpan.FromMinutes(1);
+				//option.Cookie.MaxAge = TimeSpan.FromMinutes(1);
+			});
+		}
+
+		{
+			//    // Sadece Mongo Identity
+			//    builder.Services.AddAuthentication(option =>
+			//    {
+			//        option.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+			//        option.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+			//    }
+			//     ).AddIdentityCookies(o => { });
+
+			//    builder.Services.AddIdentityCore<User>(option =>
+			//    {
+			//        //option.Password.RequireDigit = false;
+			//        //option.User.AllowedUserNameCharacters = new[] { "asd" };
+			//    }
+			//    )
+			//    .AddRoles<MongoIdentityRole>()
+			//    .AddMongoDbStores<User, MongoIdentityRole, Guid>(
+			//        builder.Configuration.GetValue<string>("RentACarDatabaseSettings:ConnectionString"),
+			//        builder.Configuration.GetValue<string>("RentACarDatabaseSettings:DatabaseName"))
+			//    .AddSignInManager()
+			//    .AddDefaultTokenProviders();
+
+			//    builder.Services.ConfigureApplicationCookie(option =>
+			//    {
+			//        option.Cookie.HttpOnly = true;
+			//        option.ExpireTimeSpan = TimeSpan.FromMinutes(1);
+			//        option.SlidingExpiration = true;
+			//        //option.Cookie.Expiration = TimeSpan.FromMinutes(1);
+			//        //option.Cookie.MaxAge = TimeSpan.FromMinutes(1);
+			//    });
+		}
+
+		{
+			// Sadece JWT
+			// JWT Ayarlarýný Okuma
+			//var jwtSettings = builder.Configuration.GetSection("Jwt");
+			//var key = Encoding.ASCII.GetBytes(jwtSettings["Key"].ToString());
+			//builder.Services.AddAuthentication(option =>
+			//{
+			//    option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+			//    option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+			//}
+			//)
+			//    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+			//    {
+			//        options.RequireHttpsMetadata = false;
+			//        options.SaveToken = true;
+			//        options.TokenValidationParameters = new TokenValidationParameters
+			//        {
+			//            ValidateIssuer = false,
+			//            ValidateAudience = false,
+			//            ValidateIssuerSigningKey = true,
+			//            IssuerSigningKey = new SymmetricSecurityKey(key)
+			//            //ValidateLifetime = true,
+			//            //ValidIssuer = "your-issuer",
+			//            //ValidAudience = "your-audience",
+			//        };
+			//    });
+		}
 
 
-
-        // Add services to the container.
-        /////////////////////////////////////////////////////////////////////
-        ////////////////////////////////////////////////////////////////////////
-        builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
-
-        //Redis
-        var redisConnection = ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis"));
-        builder.Services.AddSingleton<IConnectionMultiplexer>(redisConnection);
-
-        //Authentication
-        {
-            // JWT + MONGO IDENTÝTY
-            var jwtSettings = builder.Configuration.GetSection("Jwt");
-            var key = Encoding.ASCII.GetBytes(jwtSettings["Key"].ToString());
-
-            builder.Services.AddAuthentication(option =>
-            {
-                option.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
-                option.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-            })
-        .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-        {
-            options.RequireHttpsMetadata = false;
-            options.SaveToken = true;
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = false,
-                ValidateAudience = false,
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key)
-                //ValidateLifetime = true,
-                //ValidIssuer = "your-issuer",
-                //ValidAudience = "your-audience",
-            };
-        })
-        .AddIdentityCookies(o => { });  //mongo identity
-
-            builder.Services.AddIdentityCore<User>(option =>
-            {
-                //option.Password.RequireDigit = false;
-                //option.User.AllowedUserNameCharacters = new[] { "asd" };
-            }
-            )
-            .AddRoles<MongoIdentityRole>()
-            .AddMongoDbStores<User, MongoIdentityRole, Guid>(
-                builder.Configuration.GetValue<string>("RentACarDatabaseSettings:ConnectionString"),
-                builder.Configuration.GetValue<string>("RentACarDatabaseSettings:DatabaseName"))
-            .AddSignInManager()
-            .AddDefaultTokenProviders();
-
-            builder.Services.ConfigureApplicationCookie(option =>
-            {
-                option.Cookie.HttpOnly = true;
-                option.ExpireTimeSpan = TimeSpan.FromMinutes(1);
-                option.SlidingExpiration = true;
-                //option.Cookie.Expiration = TimeSpan.FromMinutes(1);
-                //option.Cookie.MaxAge = TimeSpan.FromMinutes(1);
-            });
-        }
-
-        {
-            //    // Sadece Mongo Identity
-            //    builder.Services.AddAuthentication(option =>
-            //    {
-            //        option.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
-            //        option.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-            //    }
-            //     ).AddIdentityCookies(o => { });
-
-            //    builder.Services.AddIdentityCore<User>(option =>
-            //    {
-            //        //option.Password.RequireDigit = false;
-            //        //option.User.AllowedUserNameCharacters = new[] { "asd" };
-            //    }
-            //    )
-            //    .AddRoles<MongoIdentityRole>()
-            //    .AddMongoDbStores<User, MongoIdentityRole, Guid>(
-            //        builder.Configuration.GetValue<string>("RentACarDatabaseSettings:ConnectionString"),
-            //        builder.Configuration.GetValue<string>("RentACarDatabaseSettings:DatabaseName"))
-            //    .AddSignInManager()
-            //    .AddDefaultTokenProviders();
-
-            //    builder.Services.ConfigureApplicationCookie(option =>
-            //    {
-            //        option.Cookie.HttpOnly = true;
-            //        option.ExpireTimeSpan = TimeSpan.FromMinutes(1);
-            //        option.SlidingExpiration = true;
-            //        //option.Cookie.Expiration = TimeSpan.FromMinutes(1);
-            //        //option.Cookie.MaxAge = TimeSpan.FromMinutes(1);
-            //    });
-        }
-
-        {
-            // Sadece JWT
-            // JWT Ayarlarýný Okuma
-            //var jwtSettings = builder.Configuration.GetSection("Jwt");
-            //var key = Encoding.ASCII.GetBytes(jwtSettings["Key"].ToString());
-            //builder.Services.AddAuthentication(option =>
-            //{
-            //    option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            //    option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            //}
-            //)
-            //    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-            //    {
-            //        options.RequireHttpsMetadata = false;
-            //        options.SaveToken = true;
-            //        options.TokenValidationParameters = new TokenValidationParameters
-            //        {
-            //            ValidateIssuer = false,
-            //            ValidateAudience = false,
-            //            ValidateIssuerSigningKey = true,
-            //            IssuerSigningKey = new SymmetricSecurityKey(key)
-            //            //ValidateLifetime = true,
-            //            //ValidIssuer = "your-issuer",
-            //            //ValidAudience = "your-audience",
-            //        };
-            //    });
-        }
-
-
-        // MongoDB baðlantý ayarlarýný yapýlandýrma
-        builder.Services.Configure<RentACarDatabaseSettings>(
-                        builder.Configuration.GetSection(nameof(RentACarDatabaseSettings)));
+		// MongoDB baðlantý ayarlarýný yapýlandýrma
+		builder.Services.Configure<RentACarDatabaseSettings>(
+						builder.Configuration.GetSection(nameof(RentACarDatabaseSettings)));
 		// apsettings.json dosyasýndaki RentACarDatabaseSettings baþlýðýndaki bilgileri  
 		// RentACarDatabaseSettings classýndaki deðiþkenlere atar.
 
 		builder.Services.Configure<MailSettings>(builder.Configuration.GetSection(nameof(MailSettings)));
 
 		builder.Services.AddSingleton<IRentACarDatabaseSettings>(sp =>
-            sp.GetRequiredService<IOptions<RentACarDatabaseSettings>>().Value);
-        // IRentACarDatabaseSettings interface çaðrýldýðýnda RentACarDatabaseSettings classýný kullanacaðýný setliyoruz.
+			sp.GetRequiredService<IOptions<RentACarDatabaseSettings>>().Value);
+		// IRentACarDatabaseSettings interface çaðrýldýðýnda RentACarDatabaseSettings classýný kullanacaðýný setliyoruz.
 
 
-        builder.Services.AddSingleton<IMongoClient>(s =>
-                new MongoClient(builder.Configuration.GetValue<string>("RentACarDatabaseSettings:ConnectionString")));
-        // Mongodbye databasee nasýl baðlanacaðýný söylüyoruz.
+		builder.Services.AddSingleton<IMongoClient>(s =>
+				new MongoClient(builder.Configuration.GetValue<string>("RentACarDatabaseSettings:ConnectionString")));
+		// Mongodbye databasee nasýl baðlanacaðýný söylüyoruz.
 
 
-        // baðýmlýlýklar
-        builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
+		// baðýmlýlýklar
+		builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
 		builder.Services.AddSingleton<IRabbitMQService, RabbitMQService>();
 		builder.Services.AddScoped<IMailService, MailService>();
 		builder.Services.AddScoped<IPublisher, Publisher>();
 		builder.Services.AddScoped<IConsumer, Consumer>();
 
 		builder.Services.AddScoped<IBrandService, BrandService>();
-        // IBrandService çaðrýldýðýnda BrandService classýný kullanacaðýný söylüyoruz.
+		// IBrandService çaðrýldýðýnda BrandService classýný kullanacaðýný söylüyoruz.
 
-        builder.Services.AddScoped<IModelService, ModelService>();
-        // IModelService çaðrýldýðýnda ModelService classýný kullanacaðýný söylüyoruz.
+		builder.Services.AddScoped<IModelService, ModelService>();
+		// IModelService çaðrýldýðýnda ModelService classýný kullanacaðýný söylüyoruz.
 
-        builder.Services.AddScoped<ICarService, CarService>();
-        // IModelService çaðrýldýðýnda ModelService classýný kullanacaðýný söylüyoruz.
+		builder.Services.AddScoped<ICarService, CarService>();
+		// IModelService çaðrýldýðýnda ModelService classýný kullanacaðýný söylüyoruz.
 
-        builder.Services.AddScoped<IUserService, UserService>();
-        // IUserService çaðrýldýðýnda UserService classýný kullanacaðýný söylüyoruz.
+		builder.Services.AddScoped<IUserService, UserService>();
+		// IUserService çaðrýldýðýnda UserService classýný kullanacaðýný söylüyoruz.
 
-        builder.Services.AddScoped<IStringConverter, StringConverter>();
-        // IModelService çaðrýldýðýnda ModelService classýný kullanacaðýný söylüyoruz.
-        //////////////////////////////////////////////////////////////////////
-        ////////////////////////////////////////////////////////////////////////
+		builder.Services.AddScoped<IStringConverter, StringConverter>();
+		// IModelService çaðrýldýðýnda ModelService classýný kullanacaðýný söylüyoruz.
+		//////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////
+
+		builder.Host.UseSerilog();
 
 
-        builder.Services.AddControllers();
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+		builder.Services.AddControllers();
+		// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+		builder.Services.AddEndpointsApiExplorer();
+		builder.Services.AddSwaggerGen();
+		
+		var app = builder.Build();
+		
+		//////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////
+		app.UseMiddleware<ErrorHandlerMiddleware>();
+	
+		app.UseAuthentication();
+		//app.UseRouting();
+		app.UseAuthorization();
 
-        var app = builder.Build();
-        //////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////
-        app.UseMiddleware<ErrorHandlerMiddleware>();
+	
+		//////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////////////////
 
-        app.UseAuthentication();
-        //app.UseRouting();
-        app.UseAuthorization();
-        //////////////////////////////////////////////////////////////////////
-        //////////////////////////////////////////////////////////////////////
+		// Configure the HTTP request pipeline.
+		if (app.Environment.IsDevelopment())
+		{
+			app.UseSwagger();
+			app.UseSwaggerUI();
+		}
 
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
+		app.UseHttpsRedirection();
 
-        app.UseHttpsRedirection();
+		app.MapControllers();
 
-        app.MapControllers();
+		app.Run();
+	}
 
-        app.Run();
-    }
+	private static void ConfigureLogging()
+	{
+		var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+		var configuration = new ConfigurationBuilder()
+			.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+			.AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true)
+			.Build();
+
+		Log.Logger = new LoggerConfiguration()
+			.Enrich.FromLogContext()
+			.Enrich.WithMachineName()
+			.WriteTo.Debug()
+			.WriteTo.Console()
+			.WriteTo.Elasticsearch(ConfigureElasticSink(configuration, environment))
+			.Enrich.WithProperty("Environment", environment)
+			.ReadFrom.Configuration(configuration)
+			.CreateLogger();
+	}
+
+	private static ElasticsearchSinkOptions ConfigureElasticSink(IConfigurationRoot configuration, string environment)
+	{
+		return new ElasticsearchSinkOptions(new Uri(configuration["ElasticConfiguration:Uri"]))
+		{
+			AutoRegisterTemplate = true,
+			IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name.ToLower().Replace(".", "-")}-{environment?.ToLower()
+			.Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}"
+		};
+	}
+
+	//private static void createhost(string[] args)
+	//{
+	//	try
+	//	{
+	//	 CreateHostBuilder(args).Build().Run();
+	//	}
+	//	catch (Exception ex) 
+	//	{
+	//		Log.Fatal($"Failed to start {Assembly.GetExecutingAssembly().GetName().Name}",ex);
+	//	}
+	//}
+
+	//public static IHostBuilder CreateHostBuilder(string[] args) =>
+	//	Host.CreateDefaultBuilder(args)
+	//	.ConfigureWebHostDefaults(webBuilder =>
+	//	{
+	//		webBuilder.UseStartup<Program>();
+	//	})
+	//	.ConfigureAppConfiguration(configuration =>
+	//	{
+	//		configuration
+	//		.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+	//		.AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true);
+
+	//	}).UseSerilog();
 }

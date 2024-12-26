@@ -16,15 +16,18 @@ namespace RentACarDotNetCore.Controllers
     public class BrandsController : ControllerBase
     {
         private readonly IBrandService _brandService;
-        public BrandsController(IBrandService brandService)
-        {
-            _brandService = brandService;
-        }
-        // GET: api/<BrandsController>
-        [HttpGet]
+        private readonly ILogger<BrandsController> _logger;
+		public BrandsController(IBrandService brandService, ILogger<BrandsController> logger)
+		{
+			_brandService = brandService;
+			_logger = logger;
+		}
+		// GET: api/<BrandsController>
+		[HttpGet]
         //[Authorize(Roles = "admin,normal")]
         public async Task<ActionResult<List<GetBrandResponse>>> Get()
         {
+            _logger.LogInformation("test Index acion executed at {date}",DateTime.UtcNow);
             return await _brandService.Get();
         }
 
