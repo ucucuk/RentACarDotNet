@@ -10,7 +10,9 @@ using RedisEntegrationBusinessDotNetCore.Abstract;
 using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests.Brand;
 using RentACarDotNetCore.Application.Responses.Brand;
+using RentACarDotNetCore.Controllers;
 using RentACarDotNetCore.Domain.Repositories;
+using Serilog;
 using System.Text.Json;
 using UtilitiesClassLibrary.Exceptions;
 using UtilitiesClassLibrary.Helpers;
@@ -25,8 +27,9 @@ namespace RentACarDotNetCore.Application.Services
 		private readonly IStringConverter _stringConverter;
 		private readonly IRedisCacheService _redisCacheService;
 		private readonly IPublisher _publisher;
+		private readonly ILogger<BrandService> _logger;
 		public BrandService(IRentACarDatabaseSettings databaseSettings, IMongoClient mongoClient, IRedisCacheService redisCacheService,
-			IMapper mapper, IStringConverter stringConverter, IPublisher publisher, IMailService mailService)
+			IMapper mapper, IStringConverter stringConverter, IPublisher publisher, IMailService mailService, ILogger<BrandService> logger)
 		{
 			var database = mongoClient.GetDatabase(databaseSettings.DatabaseName);
 			_brands = database.GetCollection<Brand>(databaseSettings.BrandsCollectionName);
@@ -35,6 +38,7 @@ namespace RentACarDotNetCore.Application.Services
 			_mapper = mapper;
 			_redisCacheService = redisCacheService;
 			_publisher = publisher;
+			_logger = logger;
 		}
 
 		public async Task<GetBrandResponse> Get(string id)
@@ -92,6 +96,7 @@ namespace RentACarDotNetCore.Application.Services
 			Brand brand = _mapper.Map<Brand>(createBrandRequest);
 			_brands.InsertOne(brand);
 
+			Log.Warning("{@Brand} is created", brand, DateTime.UtcNow);
 			_publisher.PublishMail(new MailDTO<BrandDTO>("", "Add Brand", "Brand creation process attempted. Check result", _mapper.Map<BrandDTO>(brand)));
 			return _mapper.Map<BrandDTO>(brand);
 		}
@@ -109,6 +114,7 @@ namespace RentACarDotNetCore.Application.Services
 		public void Delete(string id)
 		{
 			var result = _brands.DeleteOne(brand => brand.Id == id);
+			Log.Warning($"{id} is deleted", result, DateTime.UtcNow);
 			_publisher.PublishMail(new MailDTO<DeleteResult>("", "Delete Brand", $"Brand with id = {id} deletion process attempted.Check result !", result));
 		}
 

@@ -10,83 +10,80 @@ using System.Diagnostics;
 
 namespace RentACarDotNetCore.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    //[Authorize]
-    public class BrandsController : ControllerBase
-    {
-        private readonly IBrandService _brandService;
-        private readonly ILogger<BrandsController> _logger;
+	[Route("api/[controller]")]
+	[ApiController]
+	//[Authorize]
+	public class BrandsController : ControllerBase
+	{
+		private readonly IBrandService _brandService;
 		public BrandsController(IBrandService brandService, ILogger<BrandsController> logger)
 		{
 			_brandService = brandService;
-			_logger = logger;
 		}
 		// GET: api/<BrandsController>
 		[HttpGet]
-        //[Authorize(Roles = "admin,normal")]
-        public async Task<ActionResult<List<GetBrandResponse>>> Get()
-        {
-            _logger.LogInformation("test Index acion executed at {date}",DateTime.UtcNow);
-            return await _brandService.Get();
-        }
+		//[Authorize(Roles = "admin,normal")]
+		public async Task<ActionResult<List<GetBrandResponse>>> Get()
+		{
+			return await _brandService.Get();
+		}
 
 		// GET: api/<BrandsController>
 		[HttpGet("getbrandwithmodels")]
-        //[Authorize(Roles = "admin")]
-        public async Task<ActionResult<List<GetBrandWithModelsResponse>>> GetBrandWithModels()
-        {
-            return await _brandService.GetBrandWithModels();
-        }
+		//[Authorize(Roles = "admin")]
+		public async Task<ActionResult<List<GetBrandWithModelsResponse>>> GetBrandWithModels()
+		{
+			return await _brandService.GetBrandWithModels();
+		}
 
-        // GET api/<BrandsController>/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<GetBrandResponse>> Get(string id)
-        {
-            GetBrandResponse brand = await _brandService.Get(id);
-            if (brand == null)
-            {
-                return NotFound($"Brand with Id = {id} not found.");
-            }
-            return brand;
-        }
+		// GET api/<BrandsController>/5
+		[HttpGet("{id}")]
+		public async Task<ActionResult<GetBrandResponse>> Get(string id)
+		{
+			GetBrandResponse brand = await _brandService.Get(id);
+			if (brand == null)
+			{
+				return NotFound($"Brand with Id = {id} not found.");
+			}
+			return brand;
+		}
 
-        // POST api/<BrandsController>
-        [HttpPost]
-        public ActionResult<BrandDTO> Post([FromBody] CreateBrandRequest createBrandRequest)
-        {
-            BrandDTO brandDTO = _brandService.Create(createBrandRequest);
-            return CreatedAtAction(nameof(Post), new { id = brandDTO.Id }, brandDTO);
-        }
+		// POST api/<BrandsController>
+		[HttpPost]
+		public ActionResult<BrandDTO> Post([FromBody] CreateBrandRequest createBrandRequest)
+		{
+			BrandDTO brandDTO = _brandService.Create(createBrandRequest);
+			return CreatedAtAction(nameof(Post), new { id = brandDTO.Id }, brandDTO);
+		}
 
-        // PUT api/<BrandsController>/5
-        [HttpPut]
-        public ActionResult Put([FromBody] UpdateBrandRequest updateBrandRequest)
-        {
-            var existingBrand = _brandService.Get(updateBrandRequest.Id);
+		// PUT api/<BrandsController>/5
+		[HttpPut]
+		public ActionResult Put([FromBody] UpdateBrandRequest updateBrandRequest)
+		{
+			var existingBrand = _brandService.Get(updateBrandRequest.Id);
 
-            if (existingBrand == null)
-            {
-                return NotFound($"Brand with id = {updateBrandRequest.Id} not found.");
-            }
-            _brandService.Update(updateBrandRequest);
-            return NoContent();
-        }
+			if (existingBrand == null)
+			{
+				return NotFound($"Brand with id = {updateBrandRequest.Id} not found.");
+			}
+			_brandService.Update(updateBrandRequest);
+			return NoContent();
+		}
 
-        // DELETE api/<BrandsController>/5
-        [HttpDelete("{id}")]
-        public ActionResult Delete(string id)
-        {
-            var existingBrand = _brandService.Get(id);
+		// DELETE api/<BrandsController>/5
+		[HttpDelete("{id}")]
+		public ActionResult Delete(string id)
+		{
+			var existingBrand = _brandService.Get(id);
 
-            if (existingBrand == null)
-            {
-                return NotFound($"Brand with id = {id} not found.");
-            }
+			if (existingBrand == null)
+			{
+				return NotFound($"Brand with id = {id} not found.");
+			}
 
-            _brandService.Delete(id);
+			_brandService.Delete(id);
 
-            return Ok($"Brand with id = {id} deleted.");
-        }
-    }
+			return Ok($"Brand with id = {id} deleted.");
+		}
+	}
 }

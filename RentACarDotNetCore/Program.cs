@@ -18,7 +18,10 @@ using RentACarDotNetCore.Application.Services;
 using RentACarDotNetCore.Domain.Entities;
 using RentACarDotNetCore.Domain.Repositories;
 using Serilog;
+using Serilog.Filters;
+using Serilog.Formatting.Json;
 using Serilog.Sinks.Elasticsearch;
+using Serilog.Sinks.File;
 using StackExchange.Redis;
 using System.Reflection;
 using System.Text;
@@ -31,8 +34,7 @@ internal class Program
 	private static void Main(string[] args)
 	{
 		ConfigureLogging();
-		//createhost(args); 
-	
+
 
 		var builder = WebApplication.CreateBuilder(args);
 
@@ -41,9 +43,13 @@ internal class Program
 		////////////////////////////////////////////////////////////////////////
 		builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
+
+		builder.Host.UseSerilog();
+
+
 		//Redis
 		var redisConnection = ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis"));
-		builder.Services.AddSingleton<IConnectionMultiplexer>(redisConnection);
+		builder.Services.AddSingleton<IConnectionMultiplexer>(redisConnection); ;
 
 		//Authentication
 		{
@@ -206,19 +212,22 @@ internal class Program
 		// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 		builder.Services.AddEndpointsApiExplorer();
 		builder.Services.AddSwaggerGen();
-		
+
+
 		var app = builder.Build();
-		
+
+
+
 		//////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////
 		app.UseMiddleware<ErrorHandlerMiddleware>();
-	
+
 		app.UseAuthentication();
 		//app.UseRouting();
 		app.UseAuthorization();
 
-	
+
 		//////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////
 
@@ -233,7 +242,15 @@ internal class Program
 
 		app.MapControllers();
 
-		app.Run();
+		try
+		{
+			app.Run();
+		}
+		catch (Exception ex)
+		{
+			Log.Fatal(ex, "Startup Error!");
+		}
+
 	}
 
 	private static void ConfigureLogging()
@@ -247,6 +264,9 @@ internal class Program
 		Log.Logger = new LoggerConfiguration()
 			.Enrich.FromLogContext()
 			.Enrich.WithMachineName()
+			.MinimumLevel.Debug()
+			.Filter.ByExcluding(Matching.FromSource("Microsoft"))
+			.Filter.ByExcluding(Matching.FromSource("System"))
 			.WriteTo.Debug()
 			.WriteTo.Console()
 			.WriteTo.Elasticsearch(ConfigureElasticSink(configuration, environment))
@@ -261,33 +281,11 @@ internal class Program
 		{
 			AutoRegisterTemplate = true,
 			IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name.ToLower().Replace(".", "-")}-{environment?.ToLower()
-			.Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}"
+			.Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
+			FailureSink = new FileSink("./fail.txt", new JsonFormatter(), null, null)
+			//IndexFormat = $"rentacar-{DateTime.UtcNow:yyyy-MM}",
+
 		};
 	}
 
-	//private static void createhost(string[] args)
-	//{
-	//	try
-	//	{
-	//	 CreateHostBuilder(args).Build().Run();
-	//	}
-	//	catch (Exception ex) 
-	//	{
-	//		Log.Fatal($"Failed to start {Assembly.GetExecutingAssembly().GetName().Name}",ex);
-	//	}
-	//}
-
-	//public static IHostBuilder CreateHostBuilder(string[] args) =>
-	//	Host.CreateDefaultBuilder(args)
-	//	.ConfigureWebHostDefaults(webBuilder =>
-	//	{
-	//		webBuilder.UseStartup<Program>();
-	//	})
-	//	.ConfigureAppConfiguration(configuration =>
-	//	{
-	//		configuration
-	//		.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-	//		.AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true);
-
-	//	}).UseSerilog();
 }
