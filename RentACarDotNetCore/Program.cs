@@ -216,7 +216,7 @@ internal class Program
 
 		var app = builder.Build();
 
-
+		//app.UseSerilogRequestLogging();
 
 		//////////////////////////////////////////////////////////////////////
 		//////////////////////////////////////////////////////////////////////
@@ -266,7 +266,7 @@ internal class Program
 			.Enrich.WithMachineName()
 			.MinimumLevel.Debug()
 			.Filter.ByExcluding(Matching.FromSource("Microsoft"))
-			.Filter.ByExcluding(Matching.FromSource("System"))
+			//.Filter.ByExcluding(Matching.FromSource("System"))
 			.WriteTo.Debug()
 			.WriteTo.Console()
 			.WriteTo.Elasticsearch(ConfigureElasticSink(configuration, environment))

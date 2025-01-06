@@ -8,6 +8,7 @@ using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests;
 using RentACarDotNetCore.Application.Responses;
 using RentACarDotNetCore.Domain.Repositories;
+using Serilog;
 using UtilitiesClassLibrary.Exceptions;
 using UtilitiesClassLibrary.Helpers;
 
@@ -70,6 +71,7 @@ namespace RentACarDotNetCore.Application.Services
 			Car car = _mapper.Map<Car>(createCarRequest);
 			car.Model = model;
 			_cars.InsertOne(car);
+			Log.Warning("{@Car} is created", car, DateTime.UtcNow);
 			_publisher.PublishMail(new MailDTO<CarDTO>("", "Add Car", "Car creation process attempted. Check result !", _mapper.Map<CarDTO>(car)));
 			return _mapper.Map<CarDTO>(car);
 		}
@@ -105,11 +107,12 @@ namespace RentACarDotNetCore.Application.Services
 		}
 		public void Delete(string id)
 		{
-			var existingCar = _cars.Find(car => car.Id == id);
+			var existingCar = _cars.Find(car => car.Id == id).FirstOrDefault();
 			if (existingCar == null)
 				throw new NotFoundException($"Car with id = {id} not found.");
 
 			var result =_cars.DeleteOne(car => car.Id == id);
+			Log.Warning($"{id} is deleted", result, DateTime.UtcNow);
 			_publisher.PublishMail(new MailDTO<DeleteResult>("", "Delete Car", $"Car with id = {id} deletion process attempted. Check result !", result));
 		}
 

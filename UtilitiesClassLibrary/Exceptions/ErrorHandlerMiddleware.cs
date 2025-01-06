@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Serilog;
 using System.Net;
+using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 
 namespace UtilitiesClassLibrary.Exceptions
@@ -48,6 +50,7 @@ namespace UtilitiesClassLibrary.Exceptions
 					break;
 			}
 			var result = JsonSerializer.Serialize(responseModel);
+			Log.Error(result);
 			await response.WriteAsync(result);
 		}
 	}

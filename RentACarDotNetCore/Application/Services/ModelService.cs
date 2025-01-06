@@ -8,6 +8,7 @@ using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests.Model;
 using RentACarDotNetCore.Application.Responses.Model;
 using RentACarDotNetCore.Domain.Repositories;
+using Serilog;
 using UtilitiesClassLibrary.Exceptions;
 using UtilitiesClassLibrary.Helpers;
 
@@ -72,6 +73,7 @@ namespace RentACarDotNetCore.Application.Services
 			model.Brand = brand;
 			_models.InsertOne(model);
 
+			Log.Warning("{@Model} is created", model, DateTime.UtcNow);
 			_publisher.PublishMail(new MailDTO<ModelDTO>("", "Add Model", "Model creation process attempted. Check result", _mapper.Map<ModelDTO>(model)));
 			return _mapper.Map<ModelDTO>(model);
 		}
@@ -116,7 +118,12 @@ namespace RentACarDotNetCore.Application.Services
 
 		public void Delete(string id)
 		{
+			var existingModel = _models.Find(model => model.Id == id).FirstOrDefault();
+			if (existingModel == null)
+				throw new NotFoundException($"Model with id = {id} not found.");
+
 			var result = _models.DeleteOne(model => model.Id == id);
+			Log.Warning($"{id} is deleted", result, DateTime.UtcNow);
 			_publisher.PublishMail(new MailDTO<DeleteResult>("", "Delete Model", $"Model with id = {id} deletion process attempted.Check result !", result));
 
 		}

@@ -27,7 +27,6 @@ namespace RentACarDotNetCore.Application.Services
 		private readonly IStringConverter _stringConverter;
 		private readonly IRedisCacheService _redisCacheService;
 		private readonly IPublisher _publisher;
-		private readonly ILogger<BrandService> _logger;
 		public BrandService(IRentACarDatabaseSettings databaseSettings, IMongoClient mongoClient, IRedisCacheService redisCacheService,
 			IMapper mapper, IStringConverter stringConverter, IPublisher publisher, IMailService mailService, ILogger<BrandService> logger)
 		{
@@ -38,7 +37,6 @@ namespace RentACarDotNetCore.Application.Services
 			_mapper = mapper;
 			_redisCacheService = redisCacheService;
 			_publisher = publisher;
-			_logger = logger;
 		}
 
 		public async Task<GetBrandResponse> Get(string id)
@@ -113,6 +111,10 @@ namespace RentACarDotNetCore.Application.Services
 
 		public void Delete(string id)
 		{
+			var existingBrand = _brands.Find(brand => brand.Id == id).FirstOrDefault();
+			if (existingBrand == null)
+				throw new NotFoundException($"Brand with id = {id} not found.");
+
 			var result = _brands.DeleteOne(brand => brand.Id == id);
 			Log.Warning($"{id} is deleted", result, DateTime.UtcNow);
 			_publisher.PublishMail(new MailDTO<DeleteResult>("", "Delete Brand", $"Brand with id = {id} deletion process attempted.Check result !", result));
