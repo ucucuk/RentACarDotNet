@@ -1,0 +1,25 @@
+﻿
+<div id="app1">
+    <p v-show="gorunsun" v-if="olussun"> {{baslik}}</p>
+    <p v-for="x in isimler">{{x.isim}}</p>
+    <ul>
+    <li v-for="x in isimler">{{x.isim}}</li>
+    </ul>
+    @* <button v-on:click ="olussun=!olussun" class="btn btn-primary">Deneme</button> *@
+    <button v-on:click ="denemeClick" class="btn btn-primary">Deneme</button>
+   
+    <input type="text" v-model="baslik">
+    <br>
+    <p>{{baslik}}</p>
+</div>
+
+
+
+@section Scripts {
+    @* <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> *@
+    @* <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16"></script> üretim *@
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+
+    <script src="~/js/rentacar.js"></script>
+}
