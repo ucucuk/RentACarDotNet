@@ -46,6 +46,16 @@ internal class Program
 
 		builder.Host.UseSerilog();
 
+		//CORS AYARI
+		builder.Services.AddCors(options =>
+		{
+			options.AddPolicy("AllowLocalhost", builder =>
+			{
+				builder.WithOrigins("https://localhost:44321")
+					   .AllowAnyHeader()
+					   .AllowAnyMethod();
+			});
+		});
 
 		//Redis
 		var redisConnection = ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis"));
@@ -213,23 +223,19 @@ internal class Program
 		builder.Services.AddEndpointsApiExplorer();
 		builder.Services.AddSwaggerGen();
 
-
+		//////////////////////////////////////////////////////////////////////
 		var app = builder.Build();
 
 		//app.UseSerilogRequestLogging();
 
-		//////////////////////////////////////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////
+		app.UseCors("AllowLocalhost"); // CORS politikasýný kullanma
 		app.UseMiddleware<ErrorHandlerMiddleware>();
 
 		app.UseAuthentication();
 		//app.UseRouting();
 		app.UseAuthorization();
-
-
 		//////////////////////////////////////////////////////////////////////
-		//////////////////////////////////////////////////////////////////////
+		
 
 		// Configure the HTTP request pipeline.
 		if (app.Environment.IsDevelopment())

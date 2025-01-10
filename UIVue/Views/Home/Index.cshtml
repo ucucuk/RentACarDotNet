@@ -1,25 +1,48 @@
 ﻿
 <div id="app1">
-    <p v-show="gorunsun" v-if="olussun"> {{baslik}}</p>
-    <p v-for="x in isimler">{{x.isim}}</p>
+	@*   <p v-show="gorunsun" v-if="olussun"> {{baslik}}</p> *@
+	@* <p v-for="x in isimler">{{x.isim}}</p>
     <ul>
     <li v-for="x in isimler">{{x.isim}}</li>
-    </ul>
-    @* <button v-on:click ="olussun=!olussun" class="btn btn-primary">Deneme</button> *@
-    <button v-on:click ="denemeClick" class="btn btn-primary">Deneme</button>
-   
+    </ul> 
+	<button v-on:click ="olussun=!olussun" class="btn btn-primary">Deneme</button>
+	  <button v-on:click ="denemeClick" class="btn btn-primary">Deneme</button>
+
     <input type="text" v-model="baslik">
     <br>
-    <p>{{baslik}}</p>
+    <p>{{baslik}}</p> *@
+	@* <p v-show="gorunsun" v-if="olussun"> {{baslik}}</p> *@
+
+	@* <button v-on:click="listele" class="btn btn-primary">{{baslik}}</button> *@
+	<input type="text"  v-model="yeniMarka" placeholder="Marka Adı" />
+	<button class="btn btn-primary" v-on:click="yenimarkafunc"> Ekle </button>
+	<div class="jumbotron mt-5">
+	<h4 class="text-primary"> Tüm Markalar</h4>
+	<table class="table table-hover">
+		<tbody>
+		<thead>
+		<th>{{baslik}}</th>
+			<th></th>
+		</thead>
+		<tr v-for="b in brands">
+			<td class="w-50" >{{b.name}}</td>
+				<td> 
+					<button class="btn btn-danger btn-sm" v-on:click="markasilfunc(b)"> Sil </button>
+				</td>
+		</tr>
+		</tbody>
+	</table>
+
+	</div>
 </div>
 
 
 
 @section Scripts {
-    @* <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> *@
-    @* <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16"></script> üretim *@
+	@* <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> *@
+	@* <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16"></script> üretim *@
 
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
 
-    <script src="~/js/rentacar.js"></script>
+	<script src="~/js/rentacar.js"></script>
 }
