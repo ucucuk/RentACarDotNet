@@ -14,24 +14,37 @@
 	@* <p v-show="gorunsun" v-if="olussun"> {{baslik}}</p> *@
 
 	@* <button v-on:click="listele" class="btn btn-primary">{{baslik}}</button> *@
-	<input type="text"  v-model="yeniMarka" placeholder="Marka Adı" />
+	<input type="text" v-model="yeniMarka" placeholder="Marka Adı">
 	<button class="btn btn-primary" v-on:click="yenimarkafunc"> Ekle </button>
 	<div class="jumbotron mt-5">
-	<h4 class="text-primary"> Tüm Markalar</h4>
-	<table class="table table-hover">
-		<tbody>
-		<thead>
-		<th>{{baslik}}</th>
+		<h4 class="text-primary"> Tüm Markalar</h4>
+		<table class="table table-hover">
+			<tbody>
+			<thead>
+				<tr>
+			<th>{{baslik}}</th>
 			<th></th>
+				</tr>
 		</thead>
-		<tr v-for="b in brands">
-			<td class="w-50" >{{b.name}}</td>
-				<td> 
-					<button class="btn btn-danger btn-sm" v-on:click="markasilfunc(b)"> Sil </button>
+			<tr v-for="b in brands">
+				<td class="w-50">
+					<input v-if="b == duzenlenenMarka" v-model="duzenlenenMarka.name">
+					<span v-else>{{b.name}}</span>
 				</td>
-		</tr>
-		</tbody>
-	</table>
+				<td>
+					<div v-if="b == duzenlenenMarka">
+						<span>Emin misiniz? </span>
+						<button class="btn btn-secondary btn-sm ml-6" v-on:click="duzenlenenMarka=null"> İptal </button>
+						<button class="btn btn-danger btn-sm" v-on:click="duzenlemarkafunc(duzenlenenMarka)"> Değişiklikleri Kaydet </button>
+					</div>
+					<div v-else >
+						<button class="btn btn-outline-secondary btn-sm" v-on:click="duzenlenenMarka=b"> Düzenle </button>
+						<button class="btn btn-outline-danger btn-sm" v-on:click="markasilfunc(b)"> Sil </button>
+					</div>
+				</td>
+			</tr>
+			</tbody>
+		</table>
 
 	</div>
 </div>

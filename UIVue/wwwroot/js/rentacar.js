@@ -7,7 +7,8 @@ var app = new Vue({
 		olussun: true,
 		isimler: [{ isim: "Ulas" }, { isim: "Cucuk" }],
 		brands: [],
-		yeniMarka:""
+		yeniMarka: "",
+		duzenlenenMarka: null
 	},
 	methods: {
 		denemeClick: function () {
@@ -38,8 +39,7 @@ var app = new Vue({
 				.catch((error) => {
 					console.error('Error:', error);
 				});
-		}
-		,
+		},
 		markasilfunc: function (brand) {
 			fetch("https://localhost:44335/api/Brands/" + brand.id, {
 				method: 'DELETE',
@@ -56,7 +56,26 @@ var app = new Vue({
 				.catch((error) => {
 					console.error('Error:', error);
 				});
-		}
+		},
+		duzenlemarkafunc: function (duzenlenenMarka) {
+			fetch("https://localhost:44335/api/Brands", {
+				method: 'PUT',
+				headers: {
+					//'Authorization': 'Bearer ' + this.token,
+					'Accept': 'application/json',
+					'Content-Type': 'application/json;charset=utf-8'
+				},
+				body: JSON.stringify(duzenlenenMarka)
+			})
+				.then(data => {
+					console.log('Success:', data);
+					this.listele();
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+				});
+			this.duzenlenenMarka = null;
+		},
 	},
 	created: function () {
 		this.listele();

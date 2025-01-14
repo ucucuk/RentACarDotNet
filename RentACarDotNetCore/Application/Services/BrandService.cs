@@ -106,7 +106,10 @@ namespace RentACarDotNetCore.Application.Services
 			{
 				throw new AlreadyExistsException($"{updateBrandRequest.Name} brand already exists.");
 			}
-			_brands.ReplaceOne(brand => brand.Id == updateBrandRequest.Id, _mapper.Map<Brand>(updateBrandRequest));
+			Brand updBrand = _brands.Find(brand => brand.Id.Equals(updateBrandRequest.Id)).FirstOrDefault();
+
+			updBrand.Name= updateBrandRequest.Name.ToUpper();
+			_brands.ReplaceOne(brand => brand.Id == updateBrandRequest.Id, updBrand);
 		}
 
 		public void Delete(string id)
