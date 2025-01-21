@@ -13,8 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailService", "EmailServic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilitiesClassLibrary", "UtilitiesClassLibrary\UtilitiesClassLibrary.csproj", "{47E87F91-B377-47D4-B289-D306A0A89D99}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UIVue", "UIVue\UIVue.csproj", "{921E2387-60CD-4907-BB2A-AD2DAA9D51A1}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,10 +39,6 @@ Global
 		{47E87F91-B377-47D4-B289-D306A0A89D99}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47E87F91-B377-47D4-B289-D306A0A89D99}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47E87F91-B377-47D4-B289-D306A0A89D99}.Release|Any CPU.Build.0 = Release|Any CPU
-		{921E2387-60CD-4907-BB2A-AD2DAA9D51A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{921E2387-60CD-4907-BB2A-AD2DAA9D51A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{921E2387-60CD-4907-BB2A-AD2DAA9D51A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{921E2387-60CD-4907-BB2A-AD2DAA9D51A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

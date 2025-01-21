@@ -51,7 +51,7 @@ internal class Program
 		{
 			options.AddPolicy("AllowLocalhost", builder =>
 			{
-				builder.WithOrigins("https://localhost:44321")
+				builder.WithOrigins("https://localhost:44321", "http://localhost:8080")
 					   .AllowAnyHeader()
 					   .AllowAnyMethod();
 			});

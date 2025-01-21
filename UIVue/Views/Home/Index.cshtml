@@ -22,11 +22,11 @@
 			<tbody>
 			<thead>
 				<tr>
-			<th>{{baslik}}</th>
-			<th></th>
+					<th>{{baslik}}</th>
+					<th></th>
 				</tr>
-		</thead>
-			<tr v-for="b in brands">
+			</thead>
+			<tr v-for="b in brands" :class="{'table-warning' : b == duzenlenenMarka}">
 				<td class="w-50">
 					<input v-if="b == duzenlenenMarka" v-model="duzenlenenMarka.name">
 					<span v-else>{{b.name}}</span>
@@ -37,7 +37,7 @@
 						<button class="btn btn-secondary btn-sm ml-6" v-on:click="duzenlenenMarka=null"> İptal </button>
 						<button class="btn btn-danger btn-sm" v-on:click="duzenlemarkafunc(duzenlenenMarka)"> Değişiklikleri Kaydet </button>
 					</div>
-					<div v-else >
+					<div v-else>
 						<button class="btn btn-outline-secondary btn-sm" v-on:click="duzenlenenMarka=b"> Düzenle </button>
 						<button class="btn btn-outline-danger btn-sm" v-on:click="markasilfunc(b)"> Sil </button>
 					</div>
