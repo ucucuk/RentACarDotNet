@@ -85,7 +85,7 @@ namespace RentACarDotNetCore.Application.Services
 
 		public BrandDTO Create(CreateBrandRequest createBrandRequest)
 		{
-			Brand existsBrand = _brands.Find(brand => brand.Name.ToLower().Equals(createBrandRequest.Name.ToLower())).FirstOrDefault();
+			Brand existsBrand = _brands.Find(brand => brand.Name.ToUpper().Equals(createBrandRequest.Name.ToUpper())).FirstOrDefault();
 			if (existsBrand != null)
 			{
 				throw new AlreadyExistsException($"{createBrandRequest.Name} brand already exists.");
@@ -101,7 +101,7 @@ namespace RentACarDotNetCore.Application.Services
 
 		public void Update(UpdateBrandRequest updateBrandRequest)
 		{
-			Brand existsBrand = _brands.Find(brand => brand.Name.ToLower().Equals(updateBrandRequest.Name.ToLower())).FirstOrDefault();
+			Brand existsBrand = _brands.Find(brand => brand.Name.ToUpper().Equals(updateBrandRequest.Name.ToUpper())).FirstOrDefault();
 			if (existsBrand != null)
 			{
 				throw new AlreadyExistsException($"{updateBrandRequest.Name} brand already exists.");

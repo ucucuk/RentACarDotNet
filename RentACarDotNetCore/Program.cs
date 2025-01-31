@@ -53,7 +53,8 @@ internal class Program
 			{
 				builder.WithOrigins("https://localhost:44321", "http://localhost:8080")
 					   .AllowAnyHeader()
-					   .AllowAnyMethod();
+					   .AllowAnyMethod()
+					   .AllowCredentials();
 			});
 		});
 
@@ -105,10 +106,11 @@ internal class Program
 			builder.Services.ConfigureApplicationCookie(option =>
 			{
 				option.Cookie.HttpOnly = true;
-				option.ExpireTimeSpan = TimeSpan.FromMinutes(1);
+				option.ExpireTimeSpan = TimeSpan.FromMinutes(2);
 				option.SlidingExpiration = true;
-				//option.Cookie.Expiration = TimeSpan.FromMinutes(1);
-				//option.Cookie.MaxAge = TimeSpan.FromMinutes(1);
+				option.Cookie.MaxAge = TimeSpan.FromMinutes(2);
+
+				option.Cookie.SameSite = SameSiteMode.None;  // Cross-origin isteklerde çerez gönderilsin for vue
 			});
 		}
 

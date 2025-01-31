@@ -59,11 +59,11 @@ namespace RentACarDotNetCore.Application.Services
 
 		public CarDTO Create(CreateCarRequest createCarRequest)
 		{
-			Car existsCar = _cars.Find(car => car.Plate.ToLower().Equals(createCarRequest.Plate.ToLower())).FirstOrDefault();
+			Car existsCar = _cars.Find(car => car.Plate.ToUpper().Equals(createCarRequest.Plate.ToUpper())).FirstOrDefault();
 			if (existsCar != null)
 				throw new AlreadyExistsException($"{createCarRequest.Plate} plate already exists.");
 
-			Model model = _models.Find(model => model.Name.ToLower().Equals(createCarRequest.ModelName.ToLower())).FirstOrDefault();
+			Model model = _models.Find(model => model.Name.ToUpper().Equals(createCarRequest.ModelName.ToUpper())).FirstOrDefault();
 			if (model == null)
 				throw new NotFoundException($"{createCarRequest.ModelName} model is not found.");
 
@@ -83,7 +83,7 @@ namespace RentACarDotNetCore.Application.Services
 			if (car == null)
 				throw new NotFoundException($"Car with id = {updateCarRequest.Id} not found.");
 
-			Model model = _models.Find(model => model.Name.ToLower().Equals(updateCarRequest.ModelName.ToLower())).FirstOrDefault();
+			Model model = _models.Find(model => model.Name.ToUpper().Equals(updateCarRequest.ModelName.ToUpper())).FirstOrDefault();
 			if (model == null)
 				throw new NotFoundException($"{updateCarRequest.ModelName} model is not found.");
 

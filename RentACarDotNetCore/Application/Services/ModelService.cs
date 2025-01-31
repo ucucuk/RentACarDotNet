@@ -63,7 +63,7 @@ namespace RentACarDotNetCore.Application.Services
 
 		public ModelDTO Create(CreateModelRequest createModelRequest)
 		{
-			Brand brand = _brands.Find(brand => brand.Name.ToLower().Equals(createModelRequest.BrandName.ToLower())).FirstOrDefault();
+			Brand brand = _brands.Find(brand => brand.Name.ToUpper().Equals(createModelRequest.BrandName.ToUpper())).FirstOrDefault();
 			if (brand == null)
 			{
 				throw new NotFoundException($"{createModelRequest.BrandName} brand is not found.");
@@ -105,7 +105,7 @@ namespace RentACarDotNetCore.Application.Services
 			model.Brand = brand;
 			_models.ReplaceOne(updateFilter, model);
 			//Model model2 = _models.Find(model =>
-			//(model.Name.ToLower().Equals(updateModelRequest.Name.ToLower()) && model.Id != updateModelRequest.Id)
+			//(model.Name.ToUpper().Equals(updateModelRequest.Name.ToUpper()) && model.Id != updateModelRequest.Id)
 			//).FirstOrDefault();
 			//if (model2 != null)
 			//{

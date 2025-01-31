@@ -85,7 +85,8 @@ namespace RentACarDotNetCore.Controllers
 
         //GET: api/<UsersController>
         [HttpGet("LogOut")]
-        public async Task<ActionResult> Logout()
+		[AllowAnonymous]
+		public async Task<ActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
             return Ok("Logout successful.");
