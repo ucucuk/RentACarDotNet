@@ -55,7 +55,9 @@ namespace RentACarDotNetCore.Controllers
             var result = await _signInManager.PasswordSignInAsync(loginUserRequest.UserName, loginUserRequest.Password, false, false);
             if (result.Succeeded)
             {
-                return Ok(result);
+                loginUserRequest.Password = "****";
+
+				return Ok(loginUserRequest);
             }
             else
             {
