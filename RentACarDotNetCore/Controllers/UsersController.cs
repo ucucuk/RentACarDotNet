@@ -93,7 +93,23 @@ namespace RentACarDotNetCore.Controllers
             await _signInManager.SignOutAsync();
             return Ok("Logout successful.");
         }
-    }
+
+
+		//GET: api/<UsersController>
+		[HttpGet("CheckLogin")]
+		[AllowAnonymous]
+		public async Task<ActionResult> CheckLogin()
+		{
+			if (HttpContext.User.Identity.IsAuthenticated)
+			{
+				return Ok(new { authenticated = true });
+			}
+			else
+			{
+				return Ok(new { authenticated = false });
+			}
+		}
+	}
 
 
 }
