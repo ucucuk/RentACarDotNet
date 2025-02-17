@@ -15,6 +15,8 @@ using System.Security.Claims;
 using System.Text;
 using UtilitiesClassLibrary.Exceptions;
 using UtilitiesClassLibrary.Helpers;
+using Serilog;
+using System.Diagnostics;
 
 namespace RentACarDotNetCore.Application.Services
 {
@@ -56,17 +58,48 @@ namespace RentACarDotNetCore.Application.Services
 		public async Task<ActionResult<GetUserResponse>> GetUser(string username)
 		{
 			User user = _users.Find(user => user.UserName.Equals(username)).FirstOrDefault();
+			if (user == null)
+				throw new NotFoundException($"{username} not found.");
+
 			var roles = await _userManager.GetRolesAsync(user);
 			GetUserResponse response = new GetUserResponse();
 			response = _mapper.Map<GetUserResponse>(user);
 			response.Roles.Clear();
 			response.Roles.AddRange(roles);
-			//foreach (var role in roles)
-			//{
-			//	response.Roles.Add(role);
-			//}
+			return response;
+		}
 
-			//var resultRole =  await _roleManager.FindByIdAsync(user.Roles);
+		public async Task<ActionResult<GetUserResponse>> AddRoleMongoUser(AddRoleRequest addRoleRequest)
+		{
+			User user = _users.Find(user => user.UserName.Equals(addRoleRequest.UserName)).FirstOrDefault();
+			if (user != null)
+			{
+				var isExistsRole = await _roleManager.RoleExistsAsync(addRoleRequest.Role.ToLower());
+				if (isExistsRole)
+				{
+					await _userManager.AddToRoleAsync(user, addRoleRequest.Role.ToLower());
+				}
+				else
+				{
+					var role = new MongoIdentityRole
+					{
+						Name = addRoleRequest.Role.ToLower(),
+						NormalizedName = addRoleRequest.Role.ToUpper()
+					};
+					var resultRole = await _roleManager.CreateAsync(role);
+					await _userManager.AddToRoleAsync(user, addRoleRequest.Role.ToLower());
+				}
+			}
+			else
+			{
+				throw new NotFoundException($"{addRoleRequest.UserName} not found.");
+			}
+
+			var roles = await _userManager.GetRolesAsync(user);
+			GetUserResponse response = new GetUserResponse();
+			response = _mapper.Map<GetUserResponse>(user);
+			response.Roles.Clear();
+			response.Roles.AddRange(roles);
 			return response;
 		}
 		public async Task<ActionResult> CreateMongoIdentityUser(CreateUserRequest createUserRequest)
