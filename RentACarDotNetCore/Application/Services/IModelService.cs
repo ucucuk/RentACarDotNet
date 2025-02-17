@@ -8,6 +8,7 @@ namespace RentACarDotNetCore.Application.Services
     public interface IModelService
     {
 		Task<List<GetModelResponse>> Get();
+		Task<List<GetModelResponse>> GetModelsByBrand(string brand);
 		Task<GetModelResponse> Get(string id);
         ModelDTO Create(CreateModelRequest createModelRequest);
         void Update(UpdateModelRequest updateModelRequest);

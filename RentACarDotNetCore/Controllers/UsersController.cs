@@ -50,15 +50,15 @@ namespace RentACarDotNetCore.Controllers
 
         [AllowAnonymous]
         [HttpPost("LoginMongoIdentityUser")]
-        public async Task<ActionResult> LoginUser([FromBody] LoginUserRequest loginUserRequest)
+        public async Task<ActionResult<GetUserResponse>> LoginUser([FromBody] LoginUserRequest loginUserRequest)
         {
             var result = await _signInManager.PasswordSignInAsync(loginUserRequest.UserName, loginUserRequest.Password, false, false);
             if (result.Succeeded)
             {
                 loginUserRequest.Password = "****";
 
-				return Ok(loginUserRequest);
-            }
+				return await _userService.GetUser(loginUserRequest.UserName);
+			}
             else
             {
                 return BadRequest(result);

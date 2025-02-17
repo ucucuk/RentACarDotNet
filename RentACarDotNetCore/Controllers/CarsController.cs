@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests;
 using RentACarDotNetCore.Application.Responses;
+using RentACarDotNetCore.Application.Responses.Model;
 using RentACarDotNetCore.Application.Services;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -28,8 +29,14 @@ namespace RentACarDotNetCore.Controllers
             return await _carService.Get();
         }
 
-        // POST api/<CarsController>
-        [HttpPost]
+		// GET: api/<ModelsController>
+		[HttpGet("GetCarsByModel")]
+		public async Task<ActionResult<List<GetCarResponse>>> GetCarsByModel(string model)
+		{
+			return await _carService.GetCarsByModel(model.ToUpper());
+		}
+		// POST api/<CarsController>
+		[HttpPost]
         public ActionResult<CarDTO> Post([FromBody] CreateCarRequest createCarRequest)
         {
             CarDTO carDTO = _carService.Create(createCarRequest);

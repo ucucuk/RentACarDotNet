@@ -8,8 +8,8 @@ namespace RentACarDotNetCore.Application.Services
     public interface ICarService
     {
         Task<List<GetCarResponse>> Get();
-
-        CarDTO Create(CreateCarRequest createCarRequest);
+		Task<List<GetCarResponse>> GetCarsByModel(string model);
+		CarDTO Create(CreateCarRequest createCarRequest);
         void Update(UpdateCarRequest updateCarRequest);
         void Delete(string id);
 

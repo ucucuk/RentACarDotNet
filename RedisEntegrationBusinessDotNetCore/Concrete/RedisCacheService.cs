@@ -8,7 +8,7 @@ namespace RedisEntegrationBusinessDotNetCore.Concrete
     {
         private readonly IConnectionMultiplexer _redisCon;
         private readonly IDatabase _cache;
-        private TimeSpan ExpireTime => TimeSpan.FromMilliseconds(1);
+        private TimeSpan ExpireTime => TimeSpan.FromMinutes(3);
 
         public RedisCacheService(IConnectionMultiplexer redisCon)
         {

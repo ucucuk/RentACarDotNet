@@ -57,6 +57,33 @@ namespace RentACarDotNetCore.Application.Services
 			return _mapper.Map<List<GetCarResponse>>(cacheDataCars);
 		}
 
+		public async Task<List<GetCarResponse>> GetCarsByModel(string model)
+		{
+			var watch = new System.Diagnostics.Stopwatch();
+			watch.Start();
+			List<Car> carsByModel = new List<Car>();
+
+			var cacheDataBrands = await _redisCacheService.GetOrAddAsync("allbrands", async () => await _brands.Find(brand => true).ToListAsync());
+			var cacheDataModels = await _redisCacheService.GetOrAddAsync("allmodels", async () => await _models.Find(model => true).ToListAsync());
+			var cacheDataCars = await _redisCacheService.GetOrAddAsync("allcars", async () => await _cars.Find(car => true).ToListAsync());
+
+			foreach (Car car in cacheDataCars)
+			{
+				if (car != null)
+				{
+					car.Model = cacheDataModels.Where(model => model.Id == car.Model.Id).FirstOrDefault();
+					car.Model.Brand = cacheDataBrands.Where(brand => brand.Id == car.Model.Brand.Id).FirstOrDefault();
+					if (car.Model.Name.Equals(model))
+					{
+						carsByModel.Add(car);
+					}
+				}
+				
+			}
+			watch.Stop();
+			Console.WriteLine($"Uygulama Vakti GetBrandWithModelsResponse Cache: {watch.ElapsedMilliseconds} ms");
+			return _mapper.Map<List<GetCarResponse>>(carsByModel);
+		}
 		public CarDTO Create(CreateCarRequest createCarRequest)
 		{
 			Car existsCar = _cars.Find(car => car.Plate.ToUpper().Equals(createCarRequest.Plate.ToUpper())).FirstOrDefault();
@@ -115,7 +142,6 @@ namespace RentACarDotNetCore.Application.Services
 			Log.Warning($"{id} is deleted", result, DateTime.UtcNow);
 			_publisher.PublishMail(new MailDTO<DeleteResult>("", "Delete Car", $"Car with id = {id} deletion process attempted. Check result !", result));
 		}
-
 
 	}
 }

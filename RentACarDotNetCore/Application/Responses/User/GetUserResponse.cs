@@ -14,7 +14,7 @@
         public string NationalIdentity {
             get
             {
-                return nationalidentity.Substring(0,5)+"******";
+                return nationalidentity.Substring(Math.Min(0,nationalidentity.Length)) +"******";
             }
             set
             {
@@ -22,5 +22,7 @@
             }
         }
         public int DateOfBirthYear { get; set; }
-    }
+
+		public List<string> Roles { get; set; }
+	}
 }

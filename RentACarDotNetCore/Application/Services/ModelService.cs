@@ -46,6 +46,26 @@ namespace RentACarDotNetCore.Application.Services
 			return _mapper.Map<GetModelResponse>(model);
 		}
 
+		public async Task<List<GetModelResponse>> GetModelsByBrand(string brand)
+		{
+			List<Model> modelsByBrand = new List<Model>();
+			var cacheDataBrands = await _redisCacheService.GetOrAddAsync("allbrands", async () => await _brands.Find(brand => true).ToListAsync());
+			var cacheDataModels = await _redisCacheService.GetOrAddAsync("allmodels", async () => await _models.Find(model => true).ToListAsync());
+
+			foreach (Model model in cacheDataModels)
+			{
+				if (model != null && model.Brand != null)
+				{
+					model.Brand = cacheDataBrands.FirstOrDefault(brand => brand.Id == model.Brand.Id);
+					if(model.Brand.Name.Equals(brand))
+					{
+						modelsByBrand.Add(model);
+					}
+				}
+			}
+
+			return _mapper.Map<List<GetModelResponse>>(modelsByBrand);
+		}
 		public async Task<List<GetModelResponse>> Get()
 		{
 			var cacheDataBrands = await _redisCacheService.GetOrAddAsync("allbrands", async () => await _brands.Find(brand => true).ToListAsync());
@@ -127,5 +147,6 @@ namespace RentACarDotNetCore.Application.Services
 			_publisher.PublishMail(new MailDTO<DeleteResult>("", "Delete Model", $"Model with id = {id} deletion process attempted.Check result !", result));
 
 		}
+
 	}
 }

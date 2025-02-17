@@ -9,6 +9,7 @@ using RentACarDotNetCore.Application.Requests.User;
 using RentACarDotNetCore.Application.Responses.User;
 using RentACarDotNetCore.Domain.Entities;
 using RentACarDotNetCore.Domain.Repositories;
+using StackExchange.Redis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -50,6 +51,23 @@ namespace RentACarDotNetCore.Application.Services
 			List<User> users = _users.Find(user => true).ToList();
 
 			return _mapper.Map<List<GetUserResponse>>(users);
+		}
+
+		public async Task<ActionResult<GetUserResponse>> GetUser(string username)
+		{
+			User user = _users.Find(user => user.UserName.Equals(username)).FirstOrDefault();
+			var roles = await _userManager.GetRolesAsync(user);
+			GetUserResponse response = new GetUserResponse();
+			response = _mapper.Map<GetUserResponse>(user);
+			response.Roles.Clear();
+			response.Roles.AddRange(roles);
+			//foreach (var role in roles)
+			//{
+			//	response.Roles.Add(role);
+			//}
+
+			//var resultRole =  await _roleManager.FindByIdAsync(user.Roles);
+			return response;
 		}
 		public async Task<ActionResult> CreateMongoIdentityUser(CreateUserRequest createUserRequest)
 		{
