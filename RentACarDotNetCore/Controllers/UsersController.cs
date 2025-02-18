@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RentACarDotNetCore.Application.Requests.User;
+using RentACarDotNetCore.Application.Responses.Brand;
 using RentACarDotNetCore.Application.Responses.User;
 using RentACarDotNetCore.Application.Services;
 using RentACarDotNetCore.Domain.Entities;
@@ -35,9 +36,22 @@ namespace RentACarDotNetCore.Controllers
 		// GET: api/<UsersController>
 		[AllowAnonymous]
 		[HttpGet]
-		public ActionResult<List<GetUserResponse>> Get()
+		public async Task<ActionResult<List<GetUserResponse>>> Get()
 		{
-			return _userService.Get();
+			return await _userService.Get();
+		}
+
+		// GET api/<UsersController>/5
+		[HttpGet("{id}")]
+		[AllowAnonymous]
+		public async Task<ActionResult<GetUserResponse>> Get(string id)
+		{
+			GetUserResponse user = await _userService.Get(id);
+			if (user == null)
+			{
+				return NotFound($"User with Id = {id} not found.");
+			}
+			return user;
 		}
 
 		// POST api/<UsersController>
@@ -49,10 +63,10 @@ namespace RentACarDotNetCore.Controllers
 		}
 
 		[AllowAnonymous]
-		[HttpPost("AddRole")]
-		public async Task<ActionResult<GetUserResponse>> AddRoleMongoUser([FromBody] AddRoleRequest addRoleRequest)
+		[HttpPost("UpdateRoles")]
+		public async Task<ActionResult<GetUserResponse>> UpdateRoleMongoUser([FromBody] UpdateRoleMongoUser updateRoleMongoUser)
 		{
-			return await _userService.AddRoleMongoUser(addRoleRequest);
+			return await _userService.UpdateRoleMongoUser(updateRoleMongoUser);
 		}
 
 		[AllowAnonymous]
@@ -118,6 +132,24 @@ namespace RentACarDotNetCore.Controllers
 			{
 				return Ok(new { authenticated = false });
 			}
+		}
+
+
+		// DELETE api/<UsersController>/5
+		[HttpDelete("{id}")]
+		[AllowAnonymous]
+		public ActionResult Delete(string id)
+		{
+			var existingUser = _userService.Get(id);
+
+			if (existingUser == null)
+			{
+				return NotFound($"User with id = {id} not found.");
+			}
+
+			_userService.Delete(id);
+
+			return Ok($"Brand with id = {id} deleted.");
 		}
 	}
 

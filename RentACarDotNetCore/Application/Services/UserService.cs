@@ -17,6 +17,11 @@ using UtilitiesClassLibrary.Exceptions;
 using UtilitiesClassLibrary.Helpers;
 using Serilog;
 using System.Diagnostics;
+using System.Data;
+using Domain.Entities;
+using RentACarDotNetCore.Application.Responses.Brand;
+using EmailService.Application.DTOs;
+using RabbitMQ.Infrastructure.Abstract;
 
 namespace RentACarDotNetCore.Application.Services
 {
@@ -29,12 +34,12 @@ namespace RentACarDotNetCore.Application.Services
 		private readonly IMongoCollection<JWTUser> _JWTUsers;
 		private readonly IMapper _mapper;
 		private readonly IStringConverter _stringConverter;
+		private readonly IPublisher _publisher;
 		private readonly string key;
 		public UserService(IConfiguration configuration,
 			UserManager<User> userManager, RoleManager<MongoIdentityRole> roleManager, SignInManager<User> signInManager,
 			IRentACarDatabaseSettings databaseSettings, IMongoClient mongoClient,
-			IMapper mapper, IStringConverter stringConverter
-			)
+			IMapper mapper, IStringConverter stringConverter, IPublisher publisher)
 		{
 			var database = mongoClient.GetDatabase(databaseSettings.DatabaseName);
 			_users = database.GetCollection<User>(databaseSettings.UsersCollectionName);
@@ -44,15 +49,36 @@ namespace RentACarDotNetCore.Application.Services
 			_userManager = userManager;  //mongo identity
 			_roleManager = roleManager;//mongo identity
 			_signInManager = signInManager;//mongo identity
+			_publisher = publisher;
 
 			var jwtSettings = configuration.GetSection("Jwt");
 			key = jwtSettings["Key"].ToString();
 		}
-		public List<GetUserResponse> Get()
+		public async Task<GetUserResponse> Get(string id)
+		{
+			User existsUser = new User();
+			existsUser = _users.Find(user => user.Id.ToString() == id).FirstOrDefault();
+
+			if (existsUser == null)
+				throw new NotFoundException($"No user found with this {id}");
+
+			return _mapper.Map<GetUserResponse>(existsUser);
+		}
+
+		public async Task<ActionResult<List<GetUserResponse>>> Get()
 		{
 			List<User> users = _users.Find(user => true).ToList();
-
-			return _mapper.Map<List<GetUserResponse>>(users);
+			List<GetUserResponse> result = new List<GetUserResponse>();
+			GetUserResponse getUserResponse = new GetUserResponse();
+			foreach (var user in users)
+			{
+				getUserResponse = _mapper.Map<GetUserResponse>(user);
+				var roles = await _userManager.GetRolesAsync(user);
+				getUserResponse.Roles.Clear();
+				getUserResponse.Roles.AddRange(roles);
+				result.Add(getUserResponse);
+			}
+			return result;
 		}
 
 		public async Task<ActionResult<GetUserResponse>> GetUser(string username)
@@ -69,33 +95,48 @@ namespace RentACarDotNetCore.Application.Services
 			return response;
 		}
 
-		public async Task<ActionResult<GetUserResponse>> AddRoleMongoUser(AddRoleRequest addRoleRequest)
+		public async Task<ActionResult<GetUserResponse>> UpdateRoleMongoUser(UpdateRoleMongoUser updateRoleMongoUser)
 		{
-			User user = _users.Find(user => user.UserName.Equals(addRoleRequest.UserName)).FirstOrDefault();
+			User user = _users.Find(user => user.UserName.Equals(updateRoleMongoUser.UserName)).FirstOrDefault();
+			IList<string> roles = new List<string>();
+
 			if (user != null)
 			{
-				var isExistsRole = await _roleManager.RoleExistsAsync(addRoleRequest.Role.ToLower());
-				if (isExistsRole)
+				roles = await _userManager.GetRolesAsync(user);
+				foreach (var role in roles)
 				{
-					await _userManager.AddToRoleAsync(user, addRoleRequest.Role.ToLower());
+					await _userManager.RemoveFromRoleAsync(user, role);
 				}
-				else
+
+				foreach (var role in updateRoleMongoUser.Roles.ToLower().Split(","))
 				{
-					var role = new MongoIdentityRole
+					if (!(role == null || role.Equals("")))
 					{
-						Name = addRoleRequest.Role.ToLower(),
-						NormalizedName = addRoleRequest.Role.ToUpper()
-					};
-					var resultRole = await _roleManager.CreateAsync(role);
-					await _userManager.AddToRoleAsync(user, addRoleRequest.Role.ToLower());
+						var isExistsRole = await _roleManager.RoleExistsAsync(role.ToLower());
+						if (isExistsRole)
+						{
+							await _userManager.AddToRoleAsync(user, role.ToLower());
+						}
+						else
+						{
+							var newRole = new MongoIdentityRole
+							{
+								Name = role.ToLower(),
+								NormalizedName = role.ToUpper()
+							};
+							var resultRole = await _roleManager.CreateAsync(newRole);
+							await _userManager.AddToRoleAsync(user, role.ToLower());
+						}
+					}
+
 				}
 			}
 			else
 			{
-				throw new NotFoundException($"{addRoleRequest.UserName} not found.");
+				throw new NotFoundException($"{updateRoleMongoUser.UserName} user was not found.");
 			}
 
-			var roles = await _userManager.GetRolesAsync(user);
+			roles = await _userManager.GetRolesAsync(user);
 			GetUserResponse response = new GetUserResponse();
 			response = _mapper.Map<GetUserResponse>(user);
 			response.Roles.Clear();
@@ -133,7 +174,9 @@ namespace RentACarDotNetCore.Application.Services
 				var resultRole = await _roleManager.CreateAsync(role);
 				await _userManager.AddToRoleAsync(user, "normal");
 
-				await _signInManager.SignInAsync(user, false);
+				//await _signInManager.SignInAsync(user, false);
+				var result2 = await _signInManager.PasswordSignInAsync(createUserRequest.UserName, createUserRequest.Password, false, false);
+				Debug.WriteLine(result2);
 				return new CreatedResult("User created successfully", user);
 			}
 			else
@@ -198,7 +241,18 @@ namespace RentACarDotNetCore.Application.Services
 				(Convert.ToInt64(NationalIdentity), FirstName, LastName, DateOfBirthYear)))
 				.Result.Body.TCKimlikNoDogrulaResult;
 		}
+
+		public void Delete(string id)
+		{
+			User existsUser = new User();
+			existsUser = _users.Find(user => user.Id.ToString() == id).FirstOrDefault();
+
+			if (existsUser == null)
+				throw new NotFoundException($"No user found with this {id}");
+
+			var result = _users.DeleteOne(user => user.Id.ToString() == id);
+			Log.Warning($"{id} is deleted", result, DateTime.UtcNow);
+			_publisher.PublishMail(new MailDTO<DeleteResult>("", "Delete User", $"User with id = {id} deletion process attempted.Check result !", result));
+		}
 	}
-
-
 }

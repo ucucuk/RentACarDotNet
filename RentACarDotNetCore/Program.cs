@@ -106,9 +106,9 @@ internal class Program
 			builder.Services.ConfigureApplicationCookie(option =>
 			{
 				option.Cookie.HttpOnly = true;
-				option.ExpireTimeSpan = TimeSpan.FromMinutes(1);
+				option.ExpireTimeSpan = TimeSpan.FromMinutes(3);
 				option.SlidingExpiration = true;
-				option.Cookie.MaxAge = TimeSpan.FromMinutes(1);
+				option.Cookie.MaxAge = TimeSpan.FromMinutes(3);
 
 				option.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 				option.Cookie.SameSite = SameSiteMode.None;  // Cross-origin isteklerde çerez gönderilsin for vue

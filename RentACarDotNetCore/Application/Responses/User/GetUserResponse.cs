@@ -2,7 +2,9 @@
 {
     public class GetUserResponse
     {
-        public DateTime CreatedDate { get; set; }
+		public string id { get; set; }
+
+		public DateTime CreatedDate { get; set; }
 
         public short Status { get; set; }
 
