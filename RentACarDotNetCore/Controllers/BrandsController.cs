@@ -25,7 +25,7 @@ namespace RentACarDotNetCore.Controllers
 		}
 		// GET: api/<BrandsController>
 		[HttpGet]
-		//[Authorize(Roles = "admin,normal")]
+		[Authorize(Roles = "admin,normal")]
 		public async Task<ActionResult<List<GetBrandResponse>>> Get()
 		{
 			return await _brandService.Get();
@@ -33,7 +33,7 @@ namespace RentACarDotNetCore.Controllers
 
 		// GET: api/<BrandsController>
 		[HttpGet("getbrandwithmodels")]
-		//[Authorize(Roles = "admin")]
+		[Authorize(Roles = "admin,normal")]
 		public async Task<ActionResult<List<GetBrandWithModelsResponse>>> GetBrandWithModels()
 		{
 			return await _brandService.GetBrandWithModels();
@@ -41,6 +41,7 @@ namespace RentACarDotNetCore.Controllers
 
 		// GET api/<BrandsController>/5
 		[HttpGet("{id}")]
+		[Authorize(Roles = "admin,normal")]
 		public async Task<ActionResult<GetBrandResponse>> Get(string id)
 		{
 			GetBrandResponse brand = await _brandService.Get(id);
@@ -53,6 +54,7 @@ namespace RentACarDotNetCore.Controllers
 
 		// POST api/<BrandsController>
 		[HttpPost]
+		[Authorize(Roles = "admin")]
 		public ActionResult<BrandDTO> Post([FromBody] CreateBrandRequest createBrandRequest)
 		{
 			BrandDTO brandDTO = _brandService.Create(createBrandRequest);
@@ -61,6 +63,7 @@ namespace RentACarDotNetCore.Controllers
 
 		// PUT api/<BrandsController>/5
 		[HttpPut]
+		[Authorize(Roles = "admin")]
 		public ActionResult Put([FromBody] UpdateBrandRequest updateBrandRequest)
 		{
 			var existingBrand = _brandService.Get(updateBrandRequest.Id);
@@ -75,6 +78,7 @@ namespace RentACarDotNetCore.Controllers
 
 		// DELETE api/<BrandsController>/5
 		[HttpDelete("{id}")]
+		[Authorize(Roles = "admin")]
 		public ActionResult Delete(string id)
 		{
 			var existingBrand = _brandService.Get(id);

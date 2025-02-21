@@ -34,8 +34,8 @@ namespace RentACarDotNetCore.Controllers
 			_userService = userService;
 		}
 		// GET: api/<UsersController>
-		[AllowAnonymous]
 		[HttpGet]
+		[Authorize(Roles = "admin")]
 		public async Task<ActionResult<List<GetUserResponse>>> Get()
 		{
 			return await _userService.Get();
@@ -43,7 +43,7 @@ namespace RentACarDotNetCore.Controllers
 
 		// GET api/<UsersController>/5
 		[HttpGet("{id}")]
-		[AllowAnonymous]
+		[Authorize(Roles = "admin,normal")]
 		public async Task<ActionResult<GetUserResponse>> Get(string id)
 		{
 			GetUserResponse user = await _userService.Get(id);
@@ -55,22 +55,22 @@ namespace RentACarDotNetCore.Controllers
 		}
 
 		// POST api/<UsersController>
-		[AllowAnonymous]
 		[HttpPost("CreateMongoIdentityUser")]
+		[Authorize(Roles = "admin")]
 		public async Task<ActionResult> CreateMongoIdentityUser([FromBody] CreateUserRequest createUserRequest)
 		{
 			return await _userService.CreateMongoIdentityUser(createUserRequest);
 		}
 
-		[AllowAnonymous]
 		[HttpPost("UpdateRoles")]
+		[Authorize(Roles = "admin")]
 		public async Task<ActionResult<GetUserResponse>> UpdateRoleMongoUser([FromBody] UpdateRoleMongoUser updateRoleMongoUser)
 		{
 			return await _userService.UpdateRoleMongoUser(updateRoleMongoUser);
 		}
 
-		[AllowAnonymous]
 		[HttpPost("LoginMongoIdentityUser")]
+		[AllowAnonymous]
 		public async Task<ActionResult<GetUserResponse>> LoginUser([FromBody] LoginUserRequest loginUserRequest)
 		{
 			var result = await _signInManager.PasswordSignInAsync(loginUserRequest.UserName, loginUserRequest.Password, false, false);
@@ -87,16 +87,16 @@ namespace RentACarDotNetCore.Controllers
 
 		}
 		// POST api/<UsersController>
-		[AllowAnonymous]
 		[HttpPost("CreateJWTUser")]
+		[Authorize(Roles = "admin")]
 		public ActionResult<JWTUser> CreateJWTUser([FromBody] CreateUserRequest createUserRequest)
 		{
 			return _userService.CreateJWTUser(createUserRequest);
 		}
 
 
-		[AllowAnonymous]
 		[HttpPost("LoginJWTUser")]
+		[AllowAnonymous]
 		public ActionResult LoginJWTUser([FromBody] LoginUserRequest loginUserRequest)
 		{
 			var token = _userService.Authenticate(loginUserRequest.UserName, loginUserRequest.Password);
@@ -137,7 +137,7 @@ namespace RentACarDotNetCore.Controllers
 
 		// DELETE api/<UsersController>/5
 		[HttpDelete("{id}")]
-		[AllowAnonymous]
+		[Authorize(Roles = "admin")]
 		public ActionResult Delete(string id)
 		{
 			var existingUser = _userService.Get(id);

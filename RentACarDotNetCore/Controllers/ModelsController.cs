@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests.Model;
@@ -11,8 +12,8 @@ namespace RentACarDotNetCore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
-    public class ModelsController : ControllerBase
+	[Authorize(AuthenticationSchemes = "Identity.Application," + JwtBearerDefaults.AuthenticationScheme)]
+	public class ModelsController : ControllerBase
     {
         private readonly IModelService _modelService;
 
@@ -21,16 +22,17 @@ namespace RentACarDotNetCore.Controllers
             _modelService = modelService;
         }
 
-
         // GET: api/<ModelsController>
         [HttpGet]
-        public async Task<ActionResult<List<GetModelResponse>>> Get()
+		[Authorize(Roles = "admin,normal")]
+		public async Task<ActionResult<List<GetModelResponse>>> Get()
         {
             return await _modelService.Get();
         }
 
 		// GET: api/<ModelsController>
 		[HttpGet("GetModelsByBrand")]
+		[Authorize(Roles = "admin,normal")]
 		public async Task<ActionResult<List<GetModelResponse>>> GetModelsByBrand(string brand)
 		{
 			return await _modelService.GetModelsByBrand(brand.ToUpper());
@@ -38,7 +40,8 @@ namespace RentACarDotNetCore.Controllers
 
 		// GET api/<ModelsController>/5
 		[HttpGet("{id}")]
-        public async Task<ActionResult<GetModelResponse>> Get(string id)
+		[Authorize(Roles = "admin,normal")]
+		public async Task<ActionResult<GetModelResponse>> Get(string id)
         {
             GetModelResponse getModelResponse = await _modelService.Get(id);
 
@@ -52,7 +55,8 @@ namespace RentACarDotNetCore.Controllers
 
         // POST api/<ModelsController>
         [HttpPost]
-        public ActionResult<ModelDTO> Post([FromBody] CreateModelRequest createModelRequest)
+		[Authorize(Roles = "admin")]
+		public ActionResult<ModelDTO> Post([FromBody] CreateModelRequest createModelRequest)
         {
             ModelDTO modelDTO = _modelService.Create(createModelRequest);
             return CreatedAtAction(nameof(Post), new { id = modelDTO.Id }, modelDTO);
@@ -61,7 +65,8 @@ namespace RentACarDotNetCore.Controllers
 
         // PUT api/<ModelsController>/5
         [HttpPut]
-        public ActionResult Put([FromBody] UpdateModelRequest updateModelRequest)
+		[Authorize(Roles = "admin")]
+		public ActionResult Put([FromBody] UpdateModelRequest updateModelRequest)
         {
             _modelService.Update(updateModelRequest);
             return NoContent();
@@ -69,7 +74,8 @@ namespace RentACarDotNetCore.Controllers
 
         // DELETE api/<ModelsController>/5
         [HttpDelete("{id}")]
-        public ActionResult Delete(string id)
+		[Authorize(Roles = "admin")]
+		public ActionResult Delete(string id)
         {
             var existingModel = _modelService.Get(id);
 

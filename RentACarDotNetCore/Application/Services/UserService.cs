@@ -56,13 +56,18 @@ namespace RentACarDotNetCore.Application.Services
 		}
 		public async Task<GetUserResponse> Get(string id)
 		{
-			User existsUser = new User();
-			existsUser = _users.Find(user => user.Id.ToString() == id).FirstOrDefault();
+			User user = _users.Find(user => user.Id.ToString() == id).FirstOrDefault();
 
-			if (existsUser == null)
+			if (user == null)
 				throw new NotFoundException($"No user found with this {id}");
 
-			return _mapper.Map<GetUserResponse>(existsUser);
+			var roles = await _userManager.GetRolesAsync(user);
+			GetUserResponse response = new GetUserResponse();
+			response = _mapper.Map<GetUserResponse>(user);
+			response.Roles.Clear();
+			response.Roles.AddRange(roles);
+
+			return response;
 		}
 
 		public async Task<ActionResult<List<GetUserResponse>>> Get()

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentACarDotNetCore.Application.DTOs;
 using RentACarDotNetCore.Application.Requests;
@@ -12,8 +13,9 @@ namespace RentACarDotNetCore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
-    public class CarsController : ControllerBase
+	[Authorize(AuthenticationSchemes = "Identity.Application," + JwtBearerDefaults.AuthenticationScheme)]
+
+	public class CarsController : ControllerBase
     {
         private readonly ICarService _carService;
 
@@ -24,20 +26,23 @@ namespace RentACarDotNetCore.Controllers
 
         // GET: api/<CarsController>
         [HttpGet]
-        public async Task<ActionResult<List<GetCarResponse>>> Get()
+		[Authorize(Roles = "admin,normal")]
+		public async Task<ActionResult<List<GetCarResponse>>> Get()
         {
             return await _carService.Get();
         }
 
 		// GET: api/<ModelsController>
 		[HttpGet("GetCarsByModel")]
+		[Authorize(Roles = "admin,normal")]
 		public async Task<ActionResult<List<GetCarResponse>>> GetCarsByModel(string model)
 		{
 			return await _carService.GetCarsByModel(model.ToUpper());
 		}
 		// POST api/<CarsController>
 		[HttpPost]
-        public ActionResult<CarDTO> Post([FromBody] CreateCarRequest createCarRequest)
+		[Authorize(Roles = "admin")]
+		public ActionResult<CarDTO> Post([FromBody] CreateCarRequest createCarRequest)
         {
             CarDTO carDTO = _carService.Create(createCarRequest);
             return CreatedAtAction(nameof(Post), new { id = carDTO.Id }, carDTO);
@@ -46,7 +51,8 @@ namespace RentACarDotNetCore.Controllers
 
         // PUT api/<CarsController>/5
         [HttpPut]
-        public ActionResult Put([FromBody] UpdateCarRequest updateCarRequest)
+		[Authorize(Roles = "admin")]
+		public ActionResult Put([FromBody] UpdateCarRequest updateCarRequest)
         {
             _carService.Update(updateCarRequest);
             return NoContent();
@@ -54,7 +60,8 @@ namespace RentACarDotNetCore.Controllers
 
         // DELETE api/<CarsController>/5
         [HttpDelete("{id}")]
-        public ActionResult Delete(string id)
+		[Authorize(Roles = "admin")]
+		public ActionResult Delete(string id)
         {
             _carService.Delete(id);
 

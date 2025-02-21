@@ -12,9 +12,5 @@ namespace RentACarDotNetCore.Application.Responses
 
         public int ModelYear { get; set; }
 
-  
-
-        
-
     }
 }
